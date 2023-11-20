@@ -1,4 +1,4 @@
-package com.elara.userservice.auth.model;
+package com.elara.userservice.auth.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -9,10 +9,8 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class AuthRequest {
+public class AuthResponse {
 
-    private String email;
-    private String password;
-    private String name;
-
+    private String accessToken;
+    private String refreshToken;
 }

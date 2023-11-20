@@ -1,8 +1,8 @@
 package com.elara.userservice.auth.controller;
 
 
-import com.elara.userservice.auth.model.AuthRequest;
-import com.elara.userservice.auth.model.AuthResponse;
+import com.elara.userservice.auth.dto.AuthRequest;
+import com.elara.userservice.auth.dto.AuthResponse;
 import com.elara.userservice.auth.service.AuthService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
