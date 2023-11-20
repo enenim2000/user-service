@@ -2,6 +2,7 @@ package com.elara.userservice.model;
 
 import lombok.Getter;
 import lombok.Setter;
+import javax.persistence.*;
 
 @Table(name = "UserLogin")
 @Entity
@@ -10,7 +11,7 @@ import lombok.Setter;
 public class UserLogin {
 
     @Column(name = "userId")
-    private long userId; // Id from the User table
+    private long userId;
 
     @Column(name = "password")
     private String password;

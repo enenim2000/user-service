@@ -2,6 +2,7 @@ package com.elara.userservice.model;
 
 import lombok.Getter;
 import lombok.Setter;
+import javax.persistence.*;
 
 @Table(name = "ApplicationAccount")
 @Entity
