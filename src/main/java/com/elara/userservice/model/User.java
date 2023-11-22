@@ -1,5 +1,6 @@
 package com.elara.userservice.model;
 
+import java.util.Date;
 import lombok.Getter;
 import lombok.Setter;
 import javax.persistence.*;
@@ -26,18 +27,27 @@ public class User {
     @Column(name = "phone")
     private String phone;
 
+    @Column(name = "lang")
+    private String lang;
+
     @Column(name = "isEmailVerified")
     private boolean isEmailVerified;
 
     @Column(name = "isPhoneVerified")
     private boolean isPhoneVerified;
 
-    @Column(name = "Status", nullable = false)
+    @Column(name = "status", nullable = false)
     private String status;
 
     @Column(name = "createdAt")
-    private String createdAt;
+    private Date createdAt;
 
     @Column(name = "updatedAt")
-    private String updatedAt;
+    private Date updatedAt;
+
+    @Column(name = "createdBy")
+    private String createdBy;
+
+    @Column(name = "updatedBy")
+    private String updatedBy;
 }

@@ -28,4 +28,10 @@ public class UserGroup {
 
     @Column(name = "updatedAt")
     private String updatedAt;
+
+    @Column(name = "createdBy")
+    private String createdBy;
+
+    @Column(name = "updatedBy")
+    private String updatedBy;
 }

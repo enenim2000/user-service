@@ -26,12 +26,18 @@ public class ApplicationAccount {
     @Column(name = "permissionId")
     private String permissionId;
 
-    @Column(name = "Status", nullable = false)
-    private String status;
-
     @Column(name = "createdAt")
     private String createdAt;
 
     @Column(name = "updatedAt")
     private String updatedAt;
+
+    @Column(name = "createdBy")
+    private String createdBy;
+
+    @Column(name = "updatedBy")
+    private String updatedBy;
+
+    @Column(name = "status", nullable = false)
+    private String status;
 }

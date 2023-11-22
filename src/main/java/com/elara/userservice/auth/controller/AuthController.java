@@ -31,12 +31,4 @@ public class AuthController {
                         .refreshToken("refresh")
                         .build());
     }
-
-    @PostMapping(value = "/roles")
-    public ResponseEntity<AuthResponse> createUserRoles() {
-        return ResponseEntity.ok(AuthResponse.builder()
-                .accessToken("roles")
-                .refreshToken("created")
-                .build());
-    }
 }

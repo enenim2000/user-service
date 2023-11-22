@@ -1,7 +1,9 @@
 package com.elara.userservice.dto.response;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 
@@ -9,23 +11,34 @@ import lombok.ToString;
 @Setter
 @ToString
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class UserResponse {
+public class UserResponse extends BaseResponse {
 
-    private Long id;
+    private Data data;
 
-    private String companyCode;
+    @Getter
+    @Setter
+    @ToString
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class Data {
+        private Long id;
 
-    private String email;
+        private String companyCode;
 
-    private String phone;
+        private String email;
 
-    private boolean isEmailVerified;
+        private String phone;
 
-    private boolean isPhoneVerified;
+        private String lang;
 
-    private String status;
+        private boolean isEmailVerified;
 
-    private String createdAt;
+        private boolean isPhoneVerified;
 
-    private String updatedAt;
+        private String status;
+
+        private String createdAt;
+
+        private String updatedAt;
+    }
 }

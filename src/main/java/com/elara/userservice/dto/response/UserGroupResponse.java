@@ -7,7 +7,7 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class UserGroupResponse {
+public class UserGroupResponse extends BaseResponse {
 
     private String userId;
 

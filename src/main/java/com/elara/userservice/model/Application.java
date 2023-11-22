@@ -1,5 +1,6 @@
 package com.elara.userservice.model;
 
+import java.util.Date;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -33,12 +34,18 @@ public class Application {
     @Column(name = "privateKey")
     private String privateKey;
 
-    @Column(name = "createdAt")
-    private String createdAt;
+    @Column(name = "createdAt", nullable = false)
+    private Date createdAt;
 
     @Column(name = "updatedAt")
-    private String updatedAt;
+    private Date updatedAt;
 
-    @Column(name = "Status", nullable = false)
+    @Column(name = "createdBy")
+    private String createdBy;
+
+    @Column(name = "updatedBy")
+    private String updatedBy;
+
+    @Column(name = "status", nullable = false)
     private String status;
 }

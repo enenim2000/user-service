@@ -1,28 +1,43 @@
 package com.elara.userservice.dto.response;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
-
 
 @Getter
 @Setter
 @ToString
+@AllArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class ApplicationResponse {
+public class ApplicationResponse extends BaseResponse {
 
-    private long id;
+    private Data data;
 
-    private String appName;
+    public ApplicationResponse() {
+        super();
+    }
 
-    private String appServer;
+    @Getter
+    @Setter
+    @ToString
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class Data {
+        private long id;
 
-    private String appServerPort;
+        private String appName;
 
-    private String status;
+        private String appServer;
 
-    private String createdAt;
+        private String appServerPort;
 
-    private String updatedAt;
+        private String status;
+
+        private String createdAt;
+
+        private String updatedAt;
+    }
 }

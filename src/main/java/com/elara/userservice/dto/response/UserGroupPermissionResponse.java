@@ -7,7 +7,7 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class UserGroupPermissionResponse {
+public class UserGroupPermissionResponse extends BaseResponse{
 
     private long groupId;
 

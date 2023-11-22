@@ -32,7 +32,7 @@ public class Company {
     @Column(name = "clientSecret")
     private String clientSecret;
 
-    @Column(name = "Status", nullable = false)
+    @Column(name = "status", nullable = false)
     private String status;
 
     @Column(name = "createdAt")

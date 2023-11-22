@@ -17,6 +17,9 @@ public class ApplicationPermission {
     @Id
     private Long id;
 
+    @Column(name = "applicationId")
+    private String applicationId;
+
     @Column(name = "permissionId", unique = true)
     private String permissionId; //Hash of appName,http method,uri e.g user-service,GET,/api/user/logout
 
@@ -32,7 +35,7 @@ public class ApplicationPermission {
     @Column(name = "isSecured")
     private boolean isSecured;
 
-    @Column(name = "Status", nullable = false)
+    @Column(name = "status", nullable = false)
     private String status;
 
     @Column(name = "createdAt")
@@ -40,4 +43,10 @@ public class ApplicationPermission {
 
     @Column(name = "updatedAt")
     private String updatedAt;
+
+    @Column(name = "createdBy")
+    private String createdBy;
+
+    @Column(name = "updatedBy")
+    private String updatedBy;
 }

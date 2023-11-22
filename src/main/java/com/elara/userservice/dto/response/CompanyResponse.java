@@ -9,7 +9,7 @@ import lombok.ToString;
 @Setter
 @ToString
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class CompanyResponse {
+public class CompanyResponse extends BaseResponse {
 
     private Long id;
 
