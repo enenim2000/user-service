@@ -177,6 +177,9 @@ public class AuthenticationService {
     authToken.setRefreshToken(jwtTokens.parseJWT(token));
     authToken.setExpires(jwtTokens.parseJWT(token).getExpiration().toString());
 
+    //TODO generate refresh token
+    //TODO save token and refresh token to UserLogin table DB
+
     return UserLoginResponse.builder()
             .data(authToken)
             .build();
