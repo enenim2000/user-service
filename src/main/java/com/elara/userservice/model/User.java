@@ -1,14 +1,18 @@
 package com.elara.userservice.model;
 
 import java.util.Date;
-import lombok.Getter;
-import lombok.Setter;
+
+import lombok.*;
+
 import javax.persistence.*;
 
 @Table(name = "User")
 @Entity
 @Getter
 @Setter
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class User {
 
     private static final long serialVersionUID = 1L;

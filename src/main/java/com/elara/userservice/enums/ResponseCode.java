@@ -3,6 +3,7 @@ package com.elara.userservice.enums;
 public enum ResponseCode {
     SUCCESSFUL("00"),
     FORBIDDEN("403"),
+    EXPECTATION_FAILED("417"),
     UN_AUTHORIZED("401"),
     INTERNAL_SERVER_ERROR("500");
 

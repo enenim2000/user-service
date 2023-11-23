@@ -1,11 +1,8 @@
 package com.elara.userservice.controller;
 
-import com.elara.userservice.annotation.Permission;
-import com.elara.userservice.dto.request.ApplicationRequest;
+import com.elara.userservice.auth.Permission;
 import com.elara.userservice.dto.request.UserRequest;
-import com.elara.userservice.dto.response.ApplicationResponse;
 import com.elara.userservice.dto.response.UserResponse;
-import com.elara.userservice.service.AccountService;
 import com.elara.userservice.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;

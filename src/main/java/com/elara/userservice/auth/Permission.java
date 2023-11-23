@@ -1,4 +1,4 @@
-package com.elara.userservice.annotation;
+package com.elara.userservice.auth;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;

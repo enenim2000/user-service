@@ -1,13 +1,10 @@
-package com.elara.userservice.util;
+package com.elara.userservice.auth;
 
-import com.elara.userservice.annotation.Permission;
 import com.elara.userservice.exception.AppException;
-import com.elara.userservice.model.AuthToken;
 import com.google.gson.Gson;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -64,8 +61,6 @@ public class AuthenticationInterceptor implements HandlerInterceptor {
             throw new AppException("Auth.Forbidden");
         }
 
-
-
         return true;
     }
 
@@ -83,20 +78,20 @@ public class AuthenticationInterceptor implements HandlerInterceptor {
     }
 
     private boolean isPermitted() {
-        String token = RequestUtil.getToken();
         RestTemplate restTemplate = new RestTemplate();
         HttpHeaders header = new HttpHeaders();
         header.add("x-auth-client-id", authServerClientId); //Service/App client id
-        header.add("x-auth-client-token", token); //Token forwarded by API Gateway or frontend client
+        header.add("x-auth-client-token", RequestUtil.getToken()); //Token forwarded by API Gateway or frontend client
         HttpEntity<String> httpEntity = new HttpEntity<>(null, header);
+        String oauthUrl = authServerUrl + "/oauth/token/verify";
         try {
-            ResponseEntity<String> response = restTemplate.exchange(authServerUrl + "/oauth/token/verify", HttpMethod.GET, httpEntity, String.class);
+            ResponseEntity<String> response = restTemplate.exchange(oauthUrl, HttpMethod.GET, httpEntity, String.class);
             if (response.getStatusCode().is2xxSuccessful()) {
                 RequestUtil.setAuthToken(new Gson().fromJson(response.getBody(), AuthToken.class));
                 return true;
             }
         } catch (Exception e) {
-            log.error("Unable to verify token: {}", token);
+            log.error("Unable to verify token server url: {}", oauthUrl);
         }
 
         return false;

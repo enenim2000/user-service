@@ -1,7 +1,6 @@
-package com.elara.userservice.util;
+package com.elara.userservice.auth;
 
 
-import com.elara.userservice.model.AuthToken;
 import javax.servlet.http.HttpServletRequest;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
@@ -24,6 +23,10 @@ public class RequestUtil {
 
     public static String getToken() {
         return getRequest().getHeader("Authorization").replace("Bearer ", "");
+    }
+
+    public static String getClientId() {
+        return getRequest().getHeader("x-auth-client-id");
     }
 
 }

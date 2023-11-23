@@ -1,16 +1,12 @@
 package com.elara.userservice.service;
 
-import com.elara.userservice.dto.request.ApplicationRequest;
 import com.elara.userservice.dto.request.UserRequest;
-import com.elara.userservice.dto.response.ApplicationResponse;
 import com.elara.userservice.dto.response.UserResponse;
 import com.elara.userservice.enums.EntityStatus;
 import com.elara.userservice.exception.AppException;
-import com.elara.userservice.model.Application;
 import com.elara.userservice.model.User;
-import com.elara.userservice.repository.ApplicationRepository;
 import com.elara.userservice.repository.UserRepository;
-import com.elara.userservice.util.RequestUtil;
+import com.elara.userservice.auth.RequestUtil;
 import java.util.Date;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;

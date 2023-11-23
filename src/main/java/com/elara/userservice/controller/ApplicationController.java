@@ -1,6 +1,6 @@
 package com.elara.userservice.controller;
 
-import com.elara.userservice.annotation.Permission;
+import com.elara.userservice.auth.Permission;
 import com.elara.userservice.dto.request.ApplicationRequest;
 import com.elara.userservice.dto.response.ApplicationResponse;
 import com.elara.userservice.service.AccountService;

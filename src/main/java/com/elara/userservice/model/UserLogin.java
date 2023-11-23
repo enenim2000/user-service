@@ -1,13 +1,17 @@
 package com.elara.userservice.model;
 
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
+
 import javax.persistence.*;
+import java.util.Date;
 
 @Table(name = "UserLogin")
 @Entity
 @Getter
 @Setter
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class UserLogin {
 
     @Column(name = "userId")
@@ -23,7 +27,7 @@ public class UserLogin {
     private String status; //Active Deactivated
 
     @Column(name = "createdAt")
-    private String createdAt;
+    private Date createdAt;
 
     @Column(name = "updatedAt")
     private String updatedAt;

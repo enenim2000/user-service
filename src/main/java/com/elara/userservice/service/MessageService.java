@@ -1,6 +1,6 @@
 package com.elara.userservice.service;
 
-import com.elara.userservice.util.RequestUtil;
+import com.elara.userservice.auth.RequestUtil;
 import java.util.Locale;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;

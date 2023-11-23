@@ -6,7 +6,7 @@ import com.elara.userservice.enums.EntityStatus;
 import com.elara.userservice.exception.AppException;
 import com.elara.userservice.model.Application;
 import com.elara.userservice.repository.ApplicationRepository;
-import com.elara.userservice.util.RequestUtil;
+import com.elara.userservice.auth.RequestUtil;
 import java.util.Date;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;

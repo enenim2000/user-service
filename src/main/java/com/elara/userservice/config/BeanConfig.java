@@ -1,5 +1,6 @@
 package com.elara.userservice.config;
 
+import com.elara.userservice.util.PasswordEncoder;
 import com.google.gson.Gson;
 import org.modelmapper.ModelMapper;
 import org.springframework.context.annotation.Bean;
@@ -16,5 +17,10 @@ public class BeanConfig {
   @Bean
   public Gson gson() {
     return new Gson();
+  }
+
+  @Bean
+  public PasswordEncoder passwordEncoder() {
+    return new PasswordEncoder();
   }
 }
