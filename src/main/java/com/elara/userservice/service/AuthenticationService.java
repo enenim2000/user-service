@@ -2,6 +2,7 @@ package com.elara.userservice.service;
 
 import com.elara.userservice.auth.AuthToken;
 import com.elara.userservice.auth.RequestUtil;
+import com.elara.userservice.dto.request.NotificationRequest;
 import com.elara.userservice.dto.request.UserLoginRequest;
 import com.elara.userservice.dto.request.UserRegisterRequest;
 import com.elara.userservice.dto.response.UserLoginResponse;
@@ -11,9 +12,13 @@ import com.elara.userservice.enums.EntityStatus;
 import com.elara.userservice.enums.UserType;
 import com.elara.userservice.exception.AppException;
 import com.elara.userservice.model.Company;
+import com.elara.userservice.model.Group;
 import com.elara.userservice.model.User;
+import com.elara.userservice.model.UserGroup;
 import com.elara.userservice.model.UserLogin;
 import com.elara.userservice.repository.CompanyRepository;
+import com.elara.userservice.repository.GroupRepository;
+import com.elara.userservice.repository.UserGroupRepository;
 import com.elara.userservice.repository.UserLoginRepository;
 import com.elara.userservice.repository.UserRepository;
 import com.elara.userservice.util.JWTTokens;
@@ -23,6 +28,7 @@ import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.MalformedJwtException;
 import io.jsonwebtoken.UnsupportedJwtException;
 import io.jsonwebtoken.security.SignatureException;
+import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
@@ -35,25 +41,37 @@ public class AuthenticationService {
 
   final UserRepository userRepository;
   final CompanyRepository companyRepository;
+  final GroupRepository groupRepository;
+  final UserGroupRepository userGroupRepository;
   final UserLoginRepository userLoginRepository;
   final ModelMapper modelMapper;
   final MessageService messageService;
+  final NotificationService notificationService;
   final PasswordEncoder passwordEncoder;
   final JWTTokens jwtTokens;
+  final ApplicationService applicationService;
 
   public AuthenticationService(UserRepository userRepository,
-                               CompanyRepository companyRepository, UserLoginRepository userLoginRepository,
-                               ModelMapper modelMapper,
-                               MessageService messageService,
-                               PasswordEncoder passwordEncoder,
-                               JWTTokens jwtTokens) {
+                                CompanyRepository companyRepository,
+                                GroupRepository groupRepository,
+                                UserGroupRepository userGroupRepository,
+                                UserLoginRepository userLoginRepository,
+                                 ModelMapper modelMapper,
+                                 MessageService messageService,
+                                  NotificationService notificationService,
+                                  PasswordEncoder passwordEncoder,
+                                 JWTTokens jwtTokens, ApplicationService applicationService) {
     this.userRepository = userRepository;
     this.companyRepository = companyRepository;
+    this.groupRepository = groupRepository;
+    this.userGroupRepository = userGroupRepository;
     this.userLoginRepository = userLoginRepository;
     this.modelMapper = modelMapper;
     this.messageService = messageService;
+    this.notificationService = notificationService;
     this.passwordEncoder = passwordEncoder;
     this.jwtTokens = jwtTokens;
+    this.applicationService = applicationService;
   }
 
   public UserRegisterResponse registerUser(UserRegisterRequest dto) {
@@ -85,8 +103,38 @@ public class AuthenticationService {
             .userId(newEntry.getId())
             .build());
 
-    //Send otp verify email
-    //Send otp to verify phone
+    String groupName = UserType.Customer.name();
+    Group group = groupRepository.findByGroupNameAndCompanyCode(groupName,
+        newEntry.getCompanyCode());
+
+    if (group == null) {
+      throw new AppException(messageService.getMessage("Group.Not.Found").replace("{0}", groupName));
+    }
+
+    UserGroup userGroup =  new UserGroup();
+    userGroup.setUserId(String.valueOf(newEntry.getId()));
+    userGroup.setGroupId(group.getId());
+    userGroupRepository.save(userGroup);
+
+    //Send otp to verify email via Notification Service
+    notificationService.sendEmail(NotificationRequest.builder()
+            .message("Please use otp code {0} to verify your email")
+            .html(null)
+            .to(newEntry.getEmail())
+            .appId("user-service")
+            .companyCode(newEntry.getCompanyCode())
+            .userId(newEntry.getEmail())
+        .build());
+
+    //Send otp to verify phone via Notification Service
+    notificationService.sendSms(NotificationRequest.builder()
+        .message("Please use otp code {0} to verify your phone number")
+        .html(null)
+        .to(newEntry.getPhone())
+        .appId("user-service")
+        .userId(newEntry.getPhone())
+        .companyCode(newEntry.getCompanyCode())
+        .build());
 
     UserRegisterResponse response = new UserRegisterResponse();
     response.setResponseMessage(messageService.getMessage("User.Register.Success"));
@@ -98,6 +146,11 @@ public class AuthenticationService {
     if (company == null) {
       throw new AppException("Company.Not.Found");
     }
+
+    if (EntityStatus.Disabled.name().equalsIgnoreCase(company.getStatus())) {
+      throw new AppException("Company.Account.Disabled");
+    }
+
     User user = userRepository.findByCompanyCodeAndEmailOrPhone(company.getCompanyCode(), dto.getUsername());
     if (user == null) {
       log.info("User not found for company:{}, username:{}", company.getCompanyCode(), dto.getUsername());
@@ -105,7 +158,6 @@ public class AuthenticationService {
     }
 
     UserLogin userLogin = userLoginRepository.findByUserId(user.getId());
-
     if (userLogin == null) {
       log.info("UserLogin not found for userId:{}", user.getId());
       throw new AppException("Login.Failed");
@@ -116,12 +168,14 @@ public class AuthenticationService {
       throw new AppException("Login.Failed");
     }
 
+    List<String> audience = applicationService.getAudience(user.getId());
+
     AuthToken authToken = modelMapper.map(user, AuthToken.class);
-    Claims claims = jwtTokens.createJWT();
-    userLogin.setToken(claims.getSubject());
-    authToken.setToken("");
-    authToken.setRefreshToken("");
-    authToken.setExpires(claims.getExpiration().toString());
+    String token = jwtTokens.createJWT(company);
+    authToken.setToken(token);
+    authToken.setAudience(audience);
+    authToken.setRefreshToken(jwtTokens.parseJWT(token));
+    authToken.setExpires(jwtTokens.parseJWT(token).getExpiration().toString());
 
     return UserLoginResponse.builder()
             .data(authToken)

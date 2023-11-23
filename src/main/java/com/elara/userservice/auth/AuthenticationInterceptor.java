@@ -1,6 +1,8 @@
 package com.elara.userservice.auth;
 
+import com.elara.userservice.enums.EntityStatus;
 import com.elara.userservice.exception.AppException;
+import com.elara.userservice.model.Company;
 import com.google.gson.Gson;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;

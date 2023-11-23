@@ -13,12 +13,12 @@ public class UserGroup {
     private static final long serialVersionUID = 1L;
 
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "Id", nullable = false)
+    @Column(name = "id", nullable = false)
     @Id
     private Long id;
 
     @Column(name = "userId")
-    private String userId;
+    private long userId;
 
     @Column(name = "groupId")
     private long groupId;

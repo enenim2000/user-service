@@ -5,7 +5,6 @@ import com.elara.userservice.dto.request.UserRegisterRequest;
 import com.elara.userservice.dto.response.UserLoginResponse;
 import com.elara.userservice.dto.response.UserLogoutResponse;
 import com.elara.userservice.dto.response.UserRegisterResponse;
-import com.elara.userservice.dto.response.UserResponse;
 import com.elara.userservice.service.AuthenticationService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -15,7 +14,11 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/oauth")

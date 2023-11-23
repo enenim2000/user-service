@@ -1,14 +1,19 @@
 package com.elara.userservice.model;
 
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.Table;
 import lombok.Getter;
 import lombok.Setter;
-import javax.persistence.*;
 
-@Table(name = "Company")
+@Table(name = "Group")
 @Entity
 @Getter
 @Setter
-public class Company {
+public class Group {
 
     private static final long serialVersionUID = 1L;
 
@@ -17,20 +22,11 @@ public class Company {
     @Id
     private Long id;
 
-    @Column(name = "companyName", unique = true)
-    private String companyName;
+    @Column(name = "groupName", unique = true)
+    private String groupName;
 
-    @Column(name = "companyCode", unique = true)
-    private String companyCode;
-
-    @Column(name = "companyAddress")
-    private String companyAddress;
-
-    @Column(name = "clientId", unique = true)
-    private String clientId;
-
-    @Column(name = "clientSecret")
-    private String clientSecret;
+    @Column(name = "description", unique = true)
+    private String description;
 
     @Column(name = "status", nullable = false)
     private String status;

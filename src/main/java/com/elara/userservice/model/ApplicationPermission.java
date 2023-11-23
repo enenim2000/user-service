@@ -13,18 +13,18 @@ public class ApplicationPermission {
     private static final long serialVersionUID = 1L;
 
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "Id", nullable = false)
+    @Column(name = "id", nullable = false)
     @Id
     private Long id;
 
     @Column(name = "applicationId")
-    private String applicationId;
+    private long applicationId;
 
     @Column(name = "permissionId", unique = true)
     private String permissionId; //Hash of appName,http method,uri e.g user-service,GET,/api/user/logout
 
     @Column(name = "permission")
-    private String permission; //The value of PreAuthorize
+    private String permission; //The value of PreAuthorize CREATE_USER
 
     @Column(name = "description")
     private String description;
