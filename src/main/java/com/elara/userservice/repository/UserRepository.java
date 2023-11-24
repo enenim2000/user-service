@@ -8,7 +8,7 @@ import org.springframework.data.repository.query.Param;
 
 public interface UserRepository extends JpaRepository<User, Long>, JpaSpecificationExecutor<User> {
 
-  @Query("select u from User u where u.companyCode = :companyCode and (u.email = :username or u.phone = username)")
+  @Query("select u from User u where u.companyCode = :companyCode and (u.email = :username or u.phone = :username)")
   User findByCompanyCodeAndEmailOrPhone(@Param("companyCode") String companyCode, @Param("username") String username);
 
   User findByEmail(String email);

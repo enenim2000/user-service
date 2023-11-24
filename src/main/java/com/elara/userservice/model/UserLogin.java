@@ -20,15 +20,19 @@ public class UserLogin {
     @Column(name = "password")
     private String password;
 
-    @Column(name = "token")
-    private String token;
-
-    @Column(name = "Status", nullable = false)
-    private String status; //Active Deactivated
+    @Column(name = "status", nullable = false)
+    private String status;
 
     @Column(name = "createdAt")
     private Date createdAt;
 
     @Column(name = "updatedAt")
     private String updatedAt;
+
+    @Column(name = "accessToken")
+    private String accessToken;
+
+    @Column(name = "refreshToken")
+    private String refreshToken;
+
 }

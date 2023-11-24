@@ -21,4 +21,12 @@ public class CustomEntityExceptionHandler extends ResponseEntityExceptionHandler
         return ResponseEntity.status(httpStatus).body(response);
     }
 
+    @ExceptionHandler(UnAuthorizedException.class)
+    public final ResponseEntity<Object> handleAppException(UnAuthorizedException ex) {
+        HashMap<String, String> response = new HashMap<>();
+        response.put("responseCode", ex.getResponseCode());
+        response.put("responseMessage", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
+    }
+
 }

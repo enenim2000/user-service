@@ -112,7 +112,7 @@ public class AuthenticationService {
     }
 
     UserGroup userGroup =  new UserGroup();
-    userGroup.setUserId(String.valueOf(newEntry.getId()));
+    userGroup.setUserId(newEntry.getId());
     userGroup.setGroupId(group.getId());
     userGroupRepository.save(userGroup);
 
@@ -171,14 +171,17 @@ public class AuthenticationService {
     List<String> audience = applicationService.getAudience(user.getId());
 
     AuthToken authToken = modelMapper.map(user, AuthToken.class);
-    String token = jwtTokens.createJWT(company);
-    authToken.setToken(token);
+    String accessToken = jwtTokens.generateAccessToken(company, dto.getUsername());
+    String refreshToken = jwtTokens.generateRefreshToken(company);
+    authToken.setAccessToken(accessToken);
     authToken.setAudience(audience);
-    authToken.setRefreshToken(jwtTokens.parseJWT(token));
-    authToken.setExpires(jwtTokens.parseJWT(token).getExpiration().toString());
+    authToken.setUsername(dto.getUsername());
+    authToken.setRefreshToken(refreshToken);
+    authToken.setExpires(jwtTokens.parseJWT(accessToken).getExpiration().toString());
 
-    //TODO generate refresh token
-    //TODO save token and refresh token to UserLogin table DB
+    userLogin.setAccessToken(accessToken);
+    userLogin.setRefreshToken(refreshToken);
+    userLoginRepository.save(userLogin);
 
     return UserLoginResponse.builder()
             .data(authToken)
@@ -189,23 +192,26 @@ public class AuthenticationService {
     return null;
   }
 
-  protected boolean isValidToken() {
+  protected boolean isValidAccessToken() {
     String token = RequestUtil.getToken();
     token = token.replace("Bearer ", "").trim();
     AuthToken authToken = new AuthToken();
-    try {
-      Claims claims = jwtTokens.parseJWT(token);
-      String username = claims.getId();
-      String companyCode = RequestUtil.getAuthToken().getCompanyCode();
-      User user = userRepository.findByCompanyCodeAndEmailOrPhone(companyCode, username);
-
-      UserLogin userLogin = user.;
-      return null;
-    } catch (ExpiredJwtException | UnsupportedJwtException | MalformedJwtException | SignatureException |
-             IllegalArgumentException ex) {
-      log.error("Token Message: ", ex);
+    Claims claims = jwtTokens.parseJWT(token);
+    String username = claims.getSubject();
+    String companyCode = claims.getIssuer();
+    User user = userRepository.findByCompanyCodeAndEmailOrPhone(companyCode, username);
+    if (user == null) {
+      throw new AppException(messageService.getMessage("User.Not.Found"));
+    }
+    UserLogin userLogin = userLoginRepository.findByUserIdAndAccessToken(user.getId(), token);
+    if (userLogin == null) {
+      throw new AppException(messageService.getMessage("Token.Not.Found"));
     }
 
-    return userInfo;
+    String audience = claims.getAudience();
+
+    //Using the audience to determine if the token has permission to access the requested resources
+
+    return true;
   }
 }

@@ -21,7 +21,7 @@ public class ApplicationPermission {
     private long applicationId;
 
     @Column(name = "permissionId", unique = true)
-    private String permissionId; //Hash of appName,http method,uri e.g user-service,GET,/api/user/logout
+    private String permissionId; //Hash SHA 256 of appName,http method,uri e.g user-service,GET,/api/user/logout
 
     @Column(name = "permission")
     private String permission; //The value of PreAuthorize CREATE_USER

@@ -1,8 +1,7 @@
 package com.elara.userservice.auth;
 
-import lombok.Data;
-
 import java.util.List;
+import lombok.Data;
 
 @Data
 public class AuthToken {
@@ -15,11 +14,17 @@ public class AuthToken {
 
   private String phone;
 
+  private String firstName;
+
+  private String lastName;
+
+  private String middleName;
+
   private String username;
 
   private String lang;
 
-  private String token;
+  private String accessToken;
 
   private String refreshToken;
 

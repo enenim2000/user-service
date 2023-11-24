@@ -3,6 +3,7 @@ package com.elara.userservice.auth;
 import com.elara.userservice.enums.EntityStatus;
 import com.elara.userservice.exception.AppException;
 import com.elara.userservice.model.Company;
+import com.elara.userservice.util.HashUtil;
 import com.google.gson.Gson;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -49,6 +50,9 @@ public class AuthenticationInterceptor implements HandlerInterceptor {
     @Value("${oauth.server.client-id}")
     private String authServerClientId;
 
+    @Value("${spring.application.name}")
+    private String serviceName;
+
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
         log.info("AuthenticationInterceptor::preHandle()");
 
@@ -82,11 +86,21 @@ public class AuthenticationInterceptor implements HandlerInterceptor {
     private boolean isPermitted() {
         RestTemplate restTemplate = new RestTemplate();
         HttpHeaders header = new HttpHeaders();
+
+        String downStreamMethodAndPathUri = RequestUtil.getMethodAndPathUri();
+
+        //Hash SHA 256 of appName,http method,uri e.g user-service,GET,/api/user/logout
+        String permissionId = HashUtil.getHash(serviceName + downStreamMethodAndPathUri);
+
+        header.add("x-auth-client-id", authServerClientId); //Service/App client id
         header.add("x-auth-client-id", authServerClientId); //Service/App client id
         header.add("x-auth-client-token", RequestUtil.getToken()); //Token forwarded by API Gateway or frontend client
+        header.add("x-auth-permission-id", permissionId);
+
         HttpEntity<String> httpEntity = new HttpEntity<>(null, header);
         String oauthUrl = authServerUrl + "/oauth/token/verify";
         try {
+            //The endpoint on the authorization server will check to see if the service has the permissionId in the ApplicationPermission table
             ResponseEntity<String> response = restTemplate.exchange(oauthUrl, HttpMethod.GET, httpEntity, String.class);
             if (response.getStatusCode().is2xxSuccessful()) {
                 RequestUtil.setAuthToken(new Gson().fromJson(response.getBody(), AuthToken.class));
