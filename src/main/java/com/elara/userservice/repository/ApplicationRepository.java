@@ -7,4 +7,6 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 public interface ApplicationRepository  extends JpaRepository<Application, Long>, JpaSpecificationExecutor<Application> {
 
   Application findByAppName(String appName);
+
+  Application findByPublicKey(String serviceClientId);
 }

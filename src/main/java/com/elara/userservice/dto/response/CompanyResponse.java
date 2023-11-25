@@ -1,31 +1,40 @@
 package com.elara.userservice.dto.response;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.*;
 
 @Getter
 @Setter
 @ToString
+@NoArgsConstructor
+@AllArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class CompanyResponse extends BaseResponse {
 
-    private Long id;
+    private Data data;
 
-    private String companyName;
+    @Getter
+    @Setter
+    @ToString
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class Data {
+        private Long id;
 
-    private String companyCode;
+        private String companyName;
 
-    private String companyAddress;
+        private String companyCode;
 
-    private String clientId;
+        private String companyAddress;
 
-    private String clientSecret;
+        private String clientId;
 
-    private String status;
+        private String clientSecret;
 
-    private String createdAt;
+        private String status;
 
-    private String updatedAt;
+        private String createdAt;
+
+        private String updatedAt;
+    }
 }

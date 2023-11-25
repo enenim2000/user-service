@@ -2,6 +2,8 @@ package com.elara.userservice.auth;
 
 
 import javax.servlet.http.HttpServletRequest;
+
+import com.elara.userservice.model.User;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
@@ -15,12 +17,20 @@ public class RequestUtil {
                 .getRequest();
     }
 
+    public static AuthToken getAuthToken() {
+        return (AuthToken) getRequest().getAttribute("auth_token");
+    }
+
     public static void setAuthToken(AuthToken authToken) {
         getRequest().setAttribute("auth_token", authToken);
     }
 
-    public static AuthToken getAuthToken() {
-        return (AuthToken) getRequest().getAttribute("auth_token");
+    public static User getUser() {
+        return (User) getRequest().getAttribute("user");
+    }
+
+    public static void setUser(User user) {
+        getRequest().setAttribute("user", user);
     }
 
     public static String getToken() {

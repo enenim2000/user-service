@@ -2,11 +2,14 @@ package com.elara.userservice.dto.response;
 
 import com.elara.userservice.model.ApplicationPermission;
 import java.util.List;
-import lombok.Getter;
-import lombok.Setter;
+
+import lombok.*;
 
 @Getter
 @Setter
+@ToString
+@NoArgsConstructor
+@AllArgsConstructor
 public class UserGroupPermissionResponse extends BaseResponse{
 
     private long groupId;

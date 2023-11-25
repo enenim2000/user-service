@@ -9,7 +9,8 @@ import lombok.ToString;
 @ToString
 public class CustomerRegisterResponse extends BaseResponse {
 
-  @
+  @Getter
+  @Setter
   public static class Data {
 
   }

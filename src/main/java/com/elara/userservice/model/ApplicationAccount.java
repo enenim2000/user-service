@@ -21,7 +21,7 @@ public class ApplicationAccount {
     private String companyCode;
 
     @Column(name = "userId")
-    private String userId;
+    private long userId;
 
     @Column(name = "permissionId")
     private String permissionId;

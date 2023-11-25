@@ -93,7 +93,6 @@ public class AuthenticationInterceptor implements HandlerInterceptor {
         String permissionId = HashUtil.getHash(serviceName + downStreamMethodAndPathUri);
 
         header.add("x-auth-client-id", authServerClientId); //Service/App client id
-        header.add("x-auth-client-id", authServerClientId); //Service/App client id
         header.add("x-auth-client-token", RequestUtil.getToken()); //Token forwarded by API Gateway or frontend client
         header.add("x-auth-permission-id", permissionId);
 

@@ -2,6 +2,7 @@ package com.elara.userservice.controller;
 
 import com.elara.userservice.dto.request.UserLoginRequest;
 import com.elara.userservice.dto.request.UserRegisterRequest;
+import com.elara.userservice.dto.response.TokenVerifyResponse;
 import com.elara.userservice.dto.response.UserLoginResponse;
 import com.elara.userservice.dto.response.UserLogoutResponse;
 import com.elara.userservice.dto.response.UserRegisterResponse;
@@ -14,11 +15,9 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import javax.servlet.http.HttpServletRequest;
 
 @RestController
 @RequestMapping("/oauth")
@@ -59,5 +58,15 @@ public class AuthenticationController {
   @PutMapping("/logout")
   public ResponseEntity<UserLogoutResponse> logoutUser() {
     return ResponseEntity.ok(authenticationService.logout());
+  }
+
+  @Operation(summary = "Verify User Is Authorized")
+  @ApiResponses(value = {
+          @ApiResponse(responseCode = "200", description = "Verify User Is Authorized",
+                  content = {@Content(mediaType = "application/json",
+                          schema = @Schema(implementation = TokenVerifyResponse.class))})})
+  @GetMapping("/token/verify")
+  public ResponseEntity<TokenVerifyResponse> logoutUser(HttpServletRequest request) {
+    return ResponseEntity.ok(authenticationService.verifyToken(request));
   }
 }

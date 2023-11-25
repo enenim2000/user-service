@@ -1,11 +1,14 @@
 package com.elara.userservice.dto.response;
 
-import com.elara.userservice.auth.AuthToken;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
 
 @Getter
 @Setter
+@ToString
+@AllArgsConstructor
 public class UserLogoutResponse extends BaseResponse {
 
 
