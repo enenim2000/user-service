@@ -1,23 +1,22 @@
 package com.elara.userservice.auth;
 
-import com.elara.userservice.enums.EntityStatus;
-import com.elara.userservice.exception.AppException;
-import com.elara.userservice.model.Company;
+import com.elara.userservice.dto.request.TokenVerifyRequest;
+import com.elara.userservice.dto.response.TokenVerifyResponse;
+import com.elara.userservice.enums.ResponseCode;
+import com.elara.userservice.exception.UnAuthorizedException;
+import com.elara.userservice.service.AuthenticationService;
+import com.elara.userservice.service.MessageService;
 import com.elara.userservice.util.HashUtil;
-import com.google.gson.Gson;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
-import org.springframework.web.client.RestTemplate;
 import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.HandlerInterceptor;
 import org.springframework.web.servlet.ModelAndView;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 @Slf4j
 @Component
@@ -53,6 +52,12 @@ public class AuthenticationInterceptor implements HandlerInterceptor {
     @Value("${spring.application.name}")
     private String serviceName;
 
+    @Autowired
+    AuthenticationService authenticationService;
+
+    @Autowired
+    MessageService messageService;
+
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
         log.info("AuthenticationInterceptor::preHandle()");
 
@@ -63,9 +68,27 @@ public class AuthenticationInterceptor implements HandlerInterceptor {
         //Call Authorization server with token forward by ApiGateway, then add the client id, and service as header
         //Authorization server will authenticate the token that it generated and return response back
         //Check if response is authenticated and has permission, allow to proceed
-        if (isSecuredRoute(handlerMethod) && !isPermitted()) {
-            throw new AppException("Auth.Forbidden");
-        }
+
+        String token = request.getHeader("Authorization").replace("Bearer ", "");
+        String httpMethod = request.getMethod();
+        String pathUri = request.getRequestURI();
+
+        //Hash SHA 256 of appName,http method,uri e.g user-service,GET,/api/user/logout
+        String permissionId = HashUtil.getHash(serviceName + httpMethod + pathUri);
+
+       TokenVerifyResponse result = authenticationService.verifyToken(TokenVerifyRequest.builder()
+                       .token(token)
+                       .serviceClientId(authServerClientId)
+                       .permissionId(permissionId)
+                       .build());
+
+       if (!isSecuredRoute(handlerMethod)) {
+           return true;
+       }
+
+       if (!ResponseCode.SUCCESSFUL.getValue().equals(result.getResponseCode())) {
+           throw new UnAuthorizedException(messageService.getMessage("Token.Invalid"));
+       }
 
         return true;
     }
@@ -83,17 +106,15 @@ public class AuthenticationInterceptor implements HandlerInterceptor {
             Permission.class);
     }
 
-    private boolean isPermitted() {
+   /* private boolean isPermitted(String forwardedToken, String httpMethod, String pathUri) {
         RestTemplate restTemplate = new RestTemplate();
         HttpHeaders header = new HttpHeaders();
 
-        String downStreamMethodAndPathUri = RequestUtil.getMethodAndPathUri();
-
         //Hash SHA 256 of appName,http method,uri e.g user-service,GET,/api/user/logout
-        String permissionId = HashUtil.getHash(serviceName + downStreamMethodAndPathUri);
+        String permissionId = HashUtil.getHash(serviceName + httpMethod + pathUri);
 
         header.add("x-auth-client-id", authServerClientId); //Service/App client id
-        header.add("x-auth-client-token", RequestUtil.getToken()); //Token forwarded by API Gateway or frontend client
+        header.add("x-auth-client-token", forwardedToken); //Token forwarded by API Gateway or frontend client
         header.add("x-auth-permission-id", permissionId);
 
         HttpEntity<String> httpEntity = new HttpEntity<>(null, header);
@@ -102,7 +123,6 @@ public class AuthenticationInterceptor implements HandlerInterceptor {
             //The endpoint on the authorization server will check to see if the service has the permissionId in the ApplicationPermission table
             ResponseEntity<String> response = restTemplate.exchange(oauthUrl, HttpMethod.GET, httpEntity, String.class);
             if (response.getStatusCode().is2xxSuccessful()) {
-                RequestUtil.setAuthToken(new Gson().fromJson(response.getBody(), AuthToken.class));
                 return true;
             }
         } catch (Exception e) {
@@ -110,5 +130,5 @@ public class AuthenticationInterceptor implements HandlerInterceptor {
         }
 
         return false;
-    }
+    }*/
 }

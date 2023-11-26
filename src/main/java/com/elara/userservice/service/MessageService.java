@@ -29,7 +29,7 @@ public class MessageService {
             lang = Locale.getDefault().getLanguage();
         }
 
-        return new Locale(lang);
+        return Locale.of(lang);
     }
 
 }

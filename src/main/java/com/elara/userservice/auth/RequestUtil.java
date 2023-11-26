@@ -38,7 +38,16 @@ public class RequestUtil {
     }
 
     public static String getClientId() {
-        return getRequest().getHeader("x-auth-client-id");
+        return getRequest().getHeader("client-id");
+    }
+
+    public static String getClientIp() {
+        String remoteIp;
+        remoteIp = getRequest().getHeader("X-FORWARDED-FOR");
+        if (remoteIp == null || "".equals(remoteIp)) {
+            remoteIp = getRequest().getRemoteAddr();
+        }
+        return remoteIp;
     }
 
     public static String getMethodAndPathUri() {

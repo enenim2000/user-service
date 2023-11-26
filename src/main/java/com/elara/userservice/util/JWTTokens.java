@@ -1,20 +1,14 @@
 package com.elara.userservice.util;
 
+import com.elara.userservice.auth.AuthToken;
+import com.elara.userservice.auth.RequestUtil;
 import com.elara.userservice.enums.ResponseCode;
-import com.elara.userservice.exception.AppException;
 import com.elara.userservice.exception.UnAuthorizedException;
 import com.elara.userservice.model.Company;
-import com.elara.userservice.service.ApplicationService;
 import com.elara.userservice.service.MessageService;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import io.jsonwebtoken.security.SignatureException;
-import jakarta.ws.rs.core.Response;
-import java.time.Instant;
-import java.util.List;
-import java.util.UUID;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -22,6 +16,8 @@ import org.springframework.stereotype.Component;
 import java.nio.charset.StandardCharsets;
 import java.security.Key;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.UUID;
 
 @Slf4j
 @Component
@@ -33,13 +29,9 @@ public class JWTTokens {
     @Value("${oauth.jwt.duration.expiry}")
     private String jwtDurationExpiry;
 
-    @PersistenceContext
-    private EntityManager entityManager;
-
     private final MessageService messageService;
 
-    public JWTTokens(EntityManager entityManager, MessageService messageService) {
-        this.entityManager = entityManager;
+    public JWTTokens(MessageService messageService) {
         this.messageService = messageService;
     }
 
@@ -58,10 +50,14 @@ public class JWTTokens {
         //We will sign our JWT with our ApiKey secret
         Key key = Keys.hmacShaKeyFor(jwtSecret.getBytes(StandardCharsets.UTF_8));
 
+        HashMap<String, String> claims = new HashMap<>();
+        claims.put("ip", RequestUtil.getClientIp());
+
         //Let's set the JWT Claims
         JwtBuilder builder = Jwts.builder().setId(id)
                 .setIssuedAt(now)
                 .setSubject(username)
+                .setClaims(claims)
                 .setIssuer(company.getCompanyCode())
                 .signWith(key, signatureAlgorithm);
 
@@ -88,11 +84,13 @@ public class JWTTokens {
     }
 
     public Claims parseJWT(String jwtToken) {
-        String message;
         try {
             Key key = Keys.hmacShaKeyFor(jwtSecret.getBytes(StandardCharsets.UTF_8));
             // Get Claims from valid token
-            return Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(jwtToken).getBody();
+            Claims claims = Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(jwtToken).getBody();
+            if (!claims.get("ip").equals(RequestUtil.getClientIp())) {
+                throw new UnAuthorizedException(messageService.getMessage("Token.Fraud"));
+            }
         } catch (SignatureException e) {
             log.error("Invalid JWT signature:", e);
         } catch (MalformedJwtException e) {
@@ -104,6 +102,23 @@ public class JWTTokens {
             log.error("JWT token is unsupported:", e);
         } catch (IllegalArgumentException e) {
             log.error("JWT claims string is empty:", e);
+        } catch (Exception e) {
+            log.error("JWT token error:", e);
+        }
+        throw new UnAuthorizedException(ResponseCode.UN_AUTHORIZED.getValue(), messageService.getMessage("Token.Invalid"));
+    }
+
+    public Claims parseRefreshJWT(String jwtToken) {
+        try {
+            Key key = Keys.hmacShaKeyFor(jwtSecret.getBytes(StandardCharsets.UTF_8));
+            // Get Claims from valid token
+            Claims claims = Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(jwtToken).getBody();
+            if (!claims.get("ip").equals(RequestUtil.getClientIp())) {
+                throw new UnAuthorizedException(messageService.getMessage("Token.Fraud"));
+            }
+        } catch (ExpiredJwtException e) {
+            log.info("Refresh token expired: {}", e.getMessage());
+            throw new UnAuthorizedException(ResponseCode.REFRESH_TOKEN_EXPIRED.getValue(), messageService.getMessage("Refresh.Token.Expired"));
         } catch (Exception e) {
             log.error("JWT token error:", e);
         }

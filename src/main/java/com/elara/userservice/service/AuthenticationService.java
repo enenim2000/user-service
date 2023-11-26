@@ -2,13 +2,8 @@ package com.elara.userservice.service;
 
 import com.elara.userservice.auth.AuthToken;
 import com.elara.userservice.auth.RequestUtil;
-import com.elara.userservice.dto.request.NotificationRequest;
-import com.elara.userservice.dto.request.UserLoginRequest;
-import com.elara.userservice.dto.request.UserRegisterRequest;
-import com.elara.userservice.dto.response.TokenVerifyResponse;
-import com.elara.userservice.dto.response.UserLoginResponse;
-import com.elara.userservice.dto.response.UserLogoutResponse;
-import com.elara.userservice.dto.response.UserRegisterResponse;
+import com.elara.userservice.dto.request.*;
+import com.elara.userservice.dto.response.*;
 import com.elara.userservice.enums.EntityStatus;
 import com.elara.userservice.enums.ResponseCode;
 import com.elara.userservice.enums.UserType;
@@ -23,7 +18,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 
-import javax.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -192,13 +186,82 @@ public class AuthenticationService {
   }
 
   public UserLogoutResponse logout() {
-    return null;
+    String token = RequestUtil.getToken();
+    Claims claims = jwtTokens.parseJWT(token);
+    Company company = companyRepository.findByClientId(RequestUtil.getClientId());
+    String username = claims.getSubject();
+
+    User user = userRepository.findByCompanyCodeAndEmailOrPhone(company.getCompanyCode(), username);
+    if (user == null) {
+      log.info("User not found for company:{}, username:{}", company.getCompanyCode(), username);
+      throw new AppException("User.Not.Found");
+    }
+
+    UserLogin userLogin = userLoginRepository.findByUserIdAndAccessToken(user.getId(), token);
+    if (userLogin == null) {
+      log.info("UserLogin not found for userId:{}", user.getId());
+      throw new AppException("Token.Not.Found");
+    }
+
+    userLogin.setAccessToken("");
+    userLogin.setRefreshToken("");
+
+    userLoginRepository.save(userLogin);
+    return new UserLogoutResponse();
+  }
+
+  public AccessTokenResponse getAccessTokenFromRefreshToken(AccessTokenRequest dto) {
+    Claims claims = jwtTokens.parseRefreshJWT(dto.getRefreshToken());
+    Company company = companyRepository.findByClientId(RequestUtil.getClientId());
+    String username = claims.getSubject();
+
+    User user = userRepository.findByCompanyCodeAndEmailOrPhone(company.getCompanyCode(), username);
+    if (user == null) {
+      log.info("User not found for company:{}, username:{}", company.getCompanyCode(), username);
+      throw new AppException("Login.Failed");
+    }
+
+    UserLogin userLogin = userLoginRepository.findByUserId(user.getId());
+    if (userLogin == null) {
+      log.info("UserLogin not found for userId:{}", user.getId());
+      throw new AppException("Login.Failed");
+    }
+
+    if (!dto.getRefreshToken().equals(userLogin.getRefreshToken())) {
+      log.info("Refresh token not match for userId:{}", username);
+      throw new UnAuthorizedException(messageService.getMessage("Token.Fraud"));
+    }
+
+    List<String> audience = applicationService.getAudience(user.getId());
+
+    AuthToken authToken = modelMapper.map(user, AuthToken.class);
+    String accessToken = jwtTokens.generateAccessToken(company, username);
+    String refreshToken = jwtTokens.generateRefreshToken(company);
+    authToken.setAccessToken(accessToken);
+    authToken.setAudience(audience);
+    authToken.setUsername(username);
+    authToken.setRefreshToken(refreshToken);
+    authToken.setExpires(jwtTokens.parseJWT(accessToken).getExpiration().toString());
+
+    userLogin.setAccessToken(accessToken);
+    userLogin.setRefreshToken(refreshToken);
+    userLoginRepository.save(userLogin);
+
+    return AccessTokenResponse.builder()
+            .data(authToken)
+            .build();
+
   }
 
   private boolean isAuthenticated(String token, long userId) {
     UserLogin userLogin = userLoginRepository.findByUserIdAndAccessToken(userId, token);
     if (userLogin == null) {
       throw new AppException(messageService.getMessage("Token.Not.Found"));
+    }
+
+    if (!token.equals(userLogin.getAccessToken())) {
+      log.info("Token not match for userId:{}", userId);
+      throw new UnAuthorizedException(messageService.getMessage("Token.Fraud"));
     }
 
     return true;
@@ -233,13 +296,13 @@ public class AuthenticationService {
     return applicationPermissionIds.contains(resource.getId());
   }
 
-  public TokenVerifyResponse verifyToken(HttpServletRequest request) {
+  public TokenVerifyResponse verifyToken(TokenVerifyRequest request) {
     TokenVerifyResponse response = new TokenVerifyResponse();
     response.setResponseCode(ResponseCode.UN_AUTHORIZED.getValue());
     response.setResponseMessage(messageService.getMessage("Auth.UnAuthorized"));
 
     //Client id of the service on application table
-    String serviceClientId = request.getHeader("x-auth-client-id");
+    String serviceClientId = request.getServiceClientId();
 
     Application application = applicationService.getByPublicKey(serviceClientId);
     if (application == null) {
@@ -247,10 +310,10 @@ public class AuthenticationService {
     }
 
     //Token forwarded by API Gateway or frontend client
-    String userToken = request.getHeader("x-auth-client-token");
+    String userToken = request.getToken();
 
     //SHA 256 hash of service-name, METHOD, path uri forwarded by the called service
-    String endpoint = request.getHeader("x-auth-permission-id");
+    String endpoint = request.getPermissionId();
 
     Claims claims = jwtTokens.parseJWT(userToken);
     String username = claims.getSubject();
@@ -280,14 +343,18 @@ public class AuthenticationService {
         response.setResponseCode(ResponseCode.SUCCESSFUL.getValue());
         response.setResponseMessage(messageService.getMessage("Auth.Successful"));
       } else {
-        response.setResponseCode(ResponseCode.UN_AUTHORIZED.getValue());
+        response.setResponseCode(ResponseCode.FORBIDDEN.getValue());
         response.setResponseMessage(messageService.getMessage("Auth.UnAuthorized"));
       }
     } else {
-      response.setResponseCode(ResponseCode.FORBIDDEN.getValue());
+      response.setResponseCode(ResponseCode.UN_AUTHORIZED.getValue());
       response.setResponseMessage(messageService.getMessage("Auth.Forbidden"));
     }
 
     return response;
+  }
+
+  public OtpVerifyResponse verifyOtp(String otp) {
+    return null;
   }
 }

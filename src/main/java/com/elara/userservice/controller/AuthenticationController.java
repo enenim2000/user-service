@@ -1,11 +1,10 @@
 package com.elara.userservice.controller;
 
+import com.elara.userservice.dto.request.AccessTokenRequest;
+import com.elara.userservice.dto.request.TokenVerifyRequest;
 import com.elara.userservice.dto.request.UserLoginRequest;
 import com.elara.userservice.dto.request.UserRegisterRequest;
-import com.elara.userservice.dto.response.TokenVerifyResponse;
-import com.elara.userservice.dto.response.UserLoginResponse;
-import com.elara.userservice.dto.response.UserLogoutResponse;
-import com.elara.userservice.dto.response.UserRegisterResponse;
+import com.elara.userservice.dto.response.*;
 import com.elara.userservice.service.AuthenticationService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -60,13 +59,33 @@ public class AuthenticationController {
     return ResponseEntity.ok(authenticationService.logout());
   }
 
+  @Operation(summary = "Obtain New Token Using Refresh Token")
+  @ApiResponses(value = {
+          @ApiResponse(responseCode = "200", description = "Obtain New Token Using Refresh Token",
+                  content = {@Content(mediaType = "application/json",
+                          schema = @Schema(implementation = TokenVerifyResponse.class))})})
+  @GetMapping("/token/refresh")
+  public ResponseEntity<AccessTokenResponse> getAccessToken(AccessTokenRequest dto) {
+    return ResponseEntity.ok(authenticationService.getAccessTokenFromRefreshToken(dto));
+  }
+
   @Operation(summary = "Verify User Is Authorized")
   @ApiResponses(value = {
           @ApiResponse(responseCode = "200", description = "Verify User Is Authorized",
                   content = {@Content(mediaType = "application/json",
                           schema = @Schema(implementation = TokenVerifyResponse.class))})})
   @GetMapping("/token/verify")
-  public ResponseEntity<TokenVerifyResponse> logoutUser(HttpServletRequest request) {
+  public ResponseEntity<TokenVerifyResponse> verifyToken(TokenVerifyRequest request) {
     return ResponseEntity.ok(authenticationService.verifyToken(request));
+  }
+
+  @Operation(summary = "Verify Otp")
+  @ApiResponses(value = {
+          @ApiResponse(responseCode = "200", description = "Verify Otp",
+                  content = {@Content(mediaType = "application/json",
+                          schema = @Schema(implementation = OtpVerifyResponse.class))})})
+  @GetMapping("/{otp}/verify")
+  public ResponseEntity<OtpVerifyResponse> verifyOtp(@PathVariable("otp") String otp) {
+    return ResponseEntity.ok(authenticationService.verifyOtp(otp));
   }
 }
