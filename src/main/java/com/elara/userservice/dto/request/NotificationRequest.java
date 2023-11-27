@@ -12,10 +12,13 @@ import lombok.ToString;
 public class NotificationRequest {
 
     private String companyCode;
-    private String appId;
-    private String userId;
-    private String to;
+    private String subject;
+    private String senderEmail;
+    private String recipientEmail;
+    private String senderPhone;
+    private String recipientPhone;
     private String message;
     private String html;
+    private String attachment;
 
 }

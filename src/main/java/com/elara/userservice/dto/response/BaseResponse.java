@@ -8,8 +8,8 @@ import lombok.Setter;
 @Setter
 public class BaseResponse {
 
-  private String responseCode;
-  private String responseMessage;
+  protected String responseCode;
+  protected String responseMessage;
 
   public BaseResponse() {
     this.responseCode = ResponseCode.SUCCESSFUL.getValue();

@@ -2,25 +2,49 @@ package com.elara.userservice.service;
 
 import com.elara.userservice.auth.AuthToken;
 import com.elara.userservice.auth.RequestUtil;
-import com.elara.userservice.dto.request.*;
-import com.elara.userservice.dto.response.*;
+import com.elara.userservice.dto.request.AccessTokenRequest;
+import com.elara.userservice.dto.request.NotificationRequest;
+import com.elara.userservice.dto.request.TokenVerifyRequest;
+import com.elara.userservice.dto.request.UserLoginRequest;
+import com.elara.userservice.dto.request.UserRegisterRequest;
+import com.elara.userservice.dto.response.AccessTokenResponse;
+import com.elara.userservice.dto.response.OtpResendResponse;
+import com.elara.userservice.dto.response.OtpVerifyResponse;
+import com.elara.userservice.dto.response.TokenVerifyResponse;
+import com.elara.userservice.dto.response.UserLoginResponse;
+import com.elara.userservice.dto.response.UserLogoutResponse;
+import com.elara.userservice.dto.response.UserRegisterResponse;
 import com.elara.userservice.enums.EntityStatus;
 import com.elara.userservice.enums.ResponseCode;
 import com.elara.userservice.enums.UserType;
 import com.elara.userservice.exception.AppException;
 import com.elara.userservice.exception.UnAuthorizedException;
-import com.elara.userservice.model.*;
-import com.elara.userservice.repository.*;
+import com.elara.userservice.model.Application;
+import com.elara.userservice.model.ApplicationAccount;
+import com.elara.userservice.model.ApplicationPermission;
+import com.elara.userservice.model.Company;
+import com.elara.userservice.model.Group;
+import com.elara.userservice.model.User;
+import com.elara.userservice.model.UserGroup;
+import com.elara.userservice.model.UserGroupPermission;
+import com.elara.userservice.model.UserLogin;
+import com.elara.userservice.repository.ApplicationAccountRepository;
+import com.elara.userservice.repository.CompanyRepository;
+import com.elara.userservice.repository.GroupRepository;
+import com.elara.userservice.repository.UserGroupPermissionRepository;
+import com.elara.userservice.repository.UserGroupRepository;
+import com.elara.userservice.repository.UserLoginRepository;
+import com.elara.userservice.repository.UserRepository;
 import com.elara.userservice.util.JWTTokens;
 import com.elara.userservice.util.PasswordEncoder;
 import io.jsonwebtoken.Claims;
-import lombok.extern.slf4j.Slf4j;
-import org.modelmapper.ModelMapper;
-import org.springframework.stereotype.Service;
-
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import lombok.extern.slf4j.Slf4j;
+import org.modelmapper.ModelMapper;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
 
 @Slf4j
 @Service
@@ -40,6 +64,12 @@ public class AuthenticationService {
   final JWTTokens jwtTokens;
   final ApplicationService applicationService;
   final UserGroupService userGroupService;
+
+  @Value("${spring.mail.username}")
+  private String senderMail;
+
+  @Value("${sms.sender}")
+  private String senderSms;
 
   public AuthenticationService(UserRepository userRepository,
                                CompanyRepository companyRepository,
@@ -116,20 +146,18 @@ public class AuthenticationService {
     //Send otp to verify email via Notification Service
     notificationService.sendEmail(NotificationRequest.builder()
             .message("Please use otp code {0} to verify your email")
-            .html(null)
-            .to(newEntry.getEmail())
-            .appId("user-service")
+            .html("Please use otp code {0} to verify your email")
+            .senderEmail(senderMail)
+            .recipientEmail(newEntry.getEmail())
             .companyCode(newEntry.getCompanyCode())
-            .userId(newEntry.getEmail())
         .build());
 
     //Send otp to verify phone via Notification Service
     notificationService.sendSms(NotificationRequest.builder()
         .message("Please use otp code {0} to verify your phone number")
         .html(null)
-        .to(newEntry.getPhone())
-        .appId("user-service")
-        .userId(newEntry.getPhone())
+        .senderPhone(senderSms)
+        .recipientPhone(newEntry.getPhone())
         .companyCode(newEntry.getCompanyCode())
         .build());
 
@@ -355,6 +383,14 @@ public class AuthenticationService {
   }
 
   public OtpVerifyResponse verifyOtp(String otp) {
+    return null;
+  }
+
+  public OtpResendResponse resendPhoneOtp(String otp) {
+    return null;
+  }
+
+  public OtpResendResponse resendEmailOtp(String otp) {
     return null;
   }
 }
