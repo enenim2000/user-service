@@ -128,6 +128,7 @@ public class AuthenticationService {
             .status(EntityStatus.Disabled.name())//Until phone and email is verified
             .createdAt(new Date())
             .userId(newEntry.getId())
+            .companyCode(newEntry.getCompanyCode())
             .build());
 
     String groupName = UserType.Customer.name();
@@ -391,6 +392,14 @@ public class AuthenticationService {
   }
 
   public OtpResendResponse resendEmailOtp(String otp) {
+    return null;
+  }
+
+  public OtpVerifyResponse verifyEmailOtp(String otp) {
+    return null;
+  }
+
+  public OtpVerifyResponse verifyPhoneOtp(String otp) {
     return null;
   }
 }
