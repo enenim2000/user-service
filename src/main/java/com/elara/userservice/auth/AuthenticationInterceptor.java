@@ -65,6 +65,10 @@ public class AuthenticationInterceptor implements HandlerInterceptor {
             return true;
         }
 
+        if (!isSecuredRoute(handlerMethod)) {
+            return true;
+        }
+
         //Call Authorization server with token forward by ApiGateway, then add the client id, and service as header
         //Authorization server will authenticate the token that it generated and return response back
         //Check if response is authenticated and has permission, allow to proceed
@@ -81,10 +85,6 @@ public class AuthenticationInterceptor implements HandlerInterceptor {
                        .serviceClientId(authServerClientId)
                        .permissionId(permissionId)
                        .build());
-
-       if (!isSecuredRoute(handlerMethod)) {
-           return true;
-       }
 
        if (!ResponseCode.SUCCESSFUL.getValue().equals(result.getResponseCode())) {
            throw new UnAuthorizedException(messageService.getMessage("Token.Invalid"));
