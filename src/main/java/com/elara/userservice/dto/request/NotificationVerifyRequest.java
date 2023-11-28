@@ -1,10 +1,9 @@
-package com.elara.userservice.dto.response;
+package com.elara.userservice.dto.request;
 
+import com.elara.userservice.enums.NotificationType;
 import com.fasterxml.jackson.annotation.JsonInclude;
-import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 
@@ -12,9 +11,9 @@ import lombok.ToString;
 @Setter
 @ToString
 @Builder
-@NoArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class NotificationResponse extends BaseResponse {
-
+public class NotificationVerifyRequest {
+    private String otp;
+    private NotificationType notificationType;
 }
 

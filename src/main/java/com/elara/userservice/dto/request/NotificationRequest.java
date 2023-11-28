@@ -1,5 +1,6 @@
 package com.elara.userservice.dto.request;
 
+import com.elara.userservice.enums.NotificationType;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
@@ -20,5 +21,6 @@ public class NotificationRequest {
     private String message;
     private String html;
     private String attachment;
-
+    private boolean requiredValidation;
+    private NotificationType validationType;
 }

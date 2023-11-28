@@ -2,49 +2,27 @@ package com.elara.userservice.service;
 
 import com.elara.userservice.auth.AuthToken;
 import com.elara.userservice.auth.RequestUtil;
-import com.elara.userservice.dto.request.AccessTokenRequest;
-import com.elara.userservice.dto.request.NotificationRequest;
-import com.elara.userservice.dto.request.TokenVerifyRequest;
-import com.elara.userservice.dto.request.UserLoginRequest;
-import com.elara.userservice.dto.request.UserRegisterRequest;
-import com.elara.userservice.dto.response.AccessTokenResponse;
-import com.elara.userservice.dto.response.OtpResendResponse;
-import com.elara.userservice.dto.response.OtpVerifyResponse;
-import com.elara.userservice.dto.response.TokenVerifyResponse;
-import com.elara.userservice.dto.response.UserLoginResponse;
-import com.elara.userservice.dto.response.UserLogoutResponse;
-import com.elara.userservice.dto.response.UserRegisterResponse;
+import com.elara.userservice.dto.request.*;
+import com.elara.userservice.dto.response.*;
 import com.elara.userservice.enums.EntityStatus;
+import com.elara.userservice.enums.NotificationType;
 import com.elara.userservice.enums.ResponseCode;
 import com.elara.userservice.enums.UserType;
 import com.elara.userservice.exception.AppException;
 import com.elara.userservice.exception.UnAuthorizedException;
-import com.elara.userservice.model.Application;
-import com.elara.userservice.model.ApplicationAccount;
-import com.elara.userservice.model.ApplicationPermission;
-import com.elara.userservice.model.Company;
-import com.elara.userservice.model.Group;
-import com.elara.userservice.model.User;
-import com.elara.userservice.model.UserGroup;
-import com.elara.userservice.model.UserGroupPermission;
-import com.elara.userservice.model.UserLogin;
-import com.elara.userservice.repository.ApplicationAccountRepository;
-import com.elara.userservice.repository.CompanyRepository;
-import com.elara.userservice.repository.GroupRepository;
-import com.elara.userservice.repository.UserGroupPermissionRepository;
-import com.elara.userservice.repository.UserGroupRepository;
-import com.elara.userservice.repository.UserLoginRepository;
-import com.elara.userservice.repository.UserRepository;
+import com.elara.userservice.model.*;
+import com.elara.userservice.repository.*;
 import com.elara.userservice.util.JWTTokens;
 import com.elara.userservice.util.PasswordEncoder;
 import io.jsonwebtoken.Claims;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
 
 @Slf4j
 @Service
@@ -64,12 +42,13 @@ public class AuthenticationService {
   final JWTTokens jwtTokens;
   final ApplicationService applicationService;
   final UserGroupService userGroupService;
+  final NotificationCacheService notificationCacheService;
 
   @Value("${spring.mail.username}")
-  private String senderMail;
+  String senderMail;
 
   @Value("${sms.sender}")
-  private String senderSms;
+  String senderSms;
 
   public AuthenticationService(UserRepository userRepository,
                                CompanyRepository companyRepository,
@@ -84,7 +63,8 @@ public class AuthenticationService {
                                PasswordEncoder passwordEncoder,
                                JWTTokens jwtTokens,
                                ApplicationService applicationService,
-                               UserGroupService userGroupService) {
+                               UserGroupService userGroupService,
+                               NotificationCacheService notificationCacheService) {
     this.userRepository = userRepository;
     this.companyRepository = companyRepository;
     this.groupRepository = groupRepository;
@@ -99,6 +79,7 @@ public class AuthenticationService {
     this.jwtTokens = jwtTokens;
     this.applicationService = applicationService;
     this.userGroupService = userGroupService;
+    this.notificationCacheService = notificationCacheService;
   }
 
   public UserRegisterResponse registerUser(UserRegisterRequest dto) {
@@ -170,28 +151,28 @@ public class AuthenticationService {
   public UserLoginResponse login(UserLoginRequest dto) {
     Company company = companyRepository.findByClientId(RequestUtil.getClientId());
     if (company == null) {
-      throw new AppException("Company.Not.Found");
+      throw new AppException(messageService.getMessage("Company.Not.Found"));
     }
 
     if (EntityStatus.Disabled.name().equalsIgnoreCase(company.getStatus())) {
-      throw new AppException("Company.Account.Disabled");
+      throw new AppException(messageService.getMessage("Company.Account.Disabled"));
     }
 
     User user = userRepository.findByCompanyCodeAndEmailOrPhone(company.getCompanyCode(), dto.getUsername());
     if (user == null) {
       log.info("User not found for company:{}, username:{}", company.getCompanyCode(), dto.getUsername());
-      throw new AppException("Login.Failed");
+      throw new AppException(messageService.getMessage("Login.Failed"));
     }
 
     UserLogin userLogin = userLoginRepository.findByUserId(user.getId());
     if (userLogin == null) {
       log.info("UserLogin not found for userId:{}", user.getId());
-      throw new AppException("Login.Failed");
+      throw new AppException(messageService.getMessage("Login.Failed"));
     }
 
     if (!passwordEncoder.matches(dto.getPassword(), userLogin.getPassword())) {
       log.info("UserLogin password does not match for email: {}", user.getEmail());
-      throw new AppException("Login.Failed");
+      throw new AppException(messageService.getMessage("Login.Failed"));
     }
 
     List<String> audience = applicationService.getAudience(user.getId());
@@ -217,19 +198,19 @@ public class AuthenticationService {
   public UserLogoutResponse logout() {
     String token = RequestUtil.getToken();
     Claims claims = jwtTokens.parseJWT(token);
-    Company company = companyRepository.findByClientId(RequestUtil.getClientId());
+    Company company = companyRepository.findByCompanyCode(RequestUtil.getAuthToken().getCompanyCode());
     String username = claims.getSubject();
 
     User user = userRepository.findByCompanyCodeAndEmailOrPhone(company.getCompanyCode(), username);
     if (user == null) {
       log.info("User not found for company:{}, username:{}", company.getCompanyCode(), username);
-      throw new AppException("User.Not.Found");
+      throw new AppException(messageService.getMessage("User.Not.Found"));
     }
 
     UserLogin userLogin = userLoginRepository.findByUserIdAndAccessToken(user.getId(), token);
     if (userLogin == null) {
       log.info("UserLogin not found for userId:{}", user.getId());
-      throw new AppException("Token.Not.Found");
+      throw new AppException(messageService.getMessage("Token.Not.Found"));
     }
 
     userLogin.setAccessToken("");
@@ -241,19 +222,20 @@ public class AuthenticationService {
 
   public AccessTokenResponse getAccessTokenFromRefreshToken(AccessTokenRequest dto) {
     Claims claims = jwtTokens.parseRefreshJWT(dto.getRefreshToken());
-    Company company = companyRepository.findByClientId(RequestUtil.getClientId());
+    String companyCode = claims.getIssuer();
+    Company company = companyRepository.findByCompanyCode(companyCode);
     String username = claims.getSubject();
 
     User user = userRepository.findByCompanyCodeAndEmailOrPhone(company.getCompanyCode(), username);
     if (user == null) {
       log.info("User not found for company:{}, username:{}", company.getCompanyCode(), username);
-      throw new AppException("Login.Failed");
+      throw new AppException(messageService.getMessage("Login.Failed"));
     }
 
     UserLogin userLogin = userLoginRepository.findByUserId(user.getId());
     if (userLogin == null) {
       log.info("UserLogin not found for userId:{}", user.getId());
-      throw new AppException("Login.Failed");
+      throw new AppException(messageService.getMessage("Login.Failed"));
     }
 
     if (!dto.getRefreshToken().equals(userLogin.getRefreshToken())) {
@@ -383,23 +365,54 @@ public class AuthenticationService {
     return response;
   }
 
-  public OtpVerifyResponse verifyOtp(String otp) {
-    return null;
+  public OtpVerifyResponse verifyOtp(String otp, NotificationType notificationType) {
+    String companyCode = RequestUtil.getAuthToken().getCompanyCode();
+    String username = RequestUtil.getAuthToken().getUsername();
+    User user = userRepository.findByCompanyCodeAndEmailOrPhone(companyCode, username);
+    if (user == null) {
+      throw new AppException(messageService.getMessage("User.Not.Found"));
+    }
+
+    boolean isValidOtp = notificationCacheService.isValid(companyCode, user.getId(), notificationType, otp);
+    OtpVerifyResponse response = new OtpVerifyResponse();
+    if (isValidOtp) {
+      response.setResponseCode(ResponseCode.SUCCESSFUL.getValue());
+      response.setResponseMessage(messageService.getMessage("Otp.Verify.Success"));
+      return response;
+    }
+
+    throw new AppException(messageService.getMessage("Otp.Verify.Fail"));
   }
 
   public OtpResendResponse resendPhoneOtp(String otp) {
-    return null;
+    OtpVerifyResponse response = verifyOtp(otp, NotificationType.PhoneVerify);
+    OtpResendResponse resp = new OtpResendResponse();
+    resp.setResponseCode(response.getResponseCode());
+    resp.setResponseMessage(response.getResponseMessage());
+    return resp;
   }
 
   public OtpResendResponse resendEmailOtp(String otp) {
-    return null;
+    OtpVerifyResponse response = verifyOtp(otp, NotificationType.EmailVerify);
+    OtpResendResponse resp = new OtpResendResponse();
+    resp.setResponseCode(response.getResponseCode());
+    resp.setResponseMessage(response.getResponseMessage());
+    return resp;
   }
 
   public OtpVerifyResponse verifyEmailOtp(String otp) {
-    return null;
+    OtpVerifyResponse response = verifyOtp(otp, NotificationType.EmailVerify);
+    OtpVerifyResponse resp = new OtpVerifyResponse();
+    resp.setResponseCode(response.getResponseCode());
+    resp.setResponseMessage(response.getResponseMessage());
+    return resp;
   }
 
   public OtpVerifyResponse verifyPhoneOtp(String otp) {
-    return null;
+    OtpVerifyResponse response = verifyOtp(otp, NotificationType.PhoneVerify);
+    OtpVerifyResponse resp = new OtpVerifyResponse();
+    resp.setResponseCode(response.getResponseCode());
+    resp.setResponseMessage(response.getResponseMessage());
+    return resp;
   }
 }

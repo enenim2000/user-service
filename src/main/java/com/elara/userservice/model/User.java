@@ -1,19 +1,21 @@
 package com.elara.userservice.model;
 
-import java.util.Date;
-
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
+import java.io.Serializable;
+import java.util.Date;
 
-@Table(name = "User")
-@Entity
-@Getter
-@Setter
+@Data
 @Builder
-@NoArgsConstructor
+@Entity
+@Table(name = "User")
 @AllArgsConstructor
-public class User {
+@NoArgsConstructor
+public class User  implements Serializable {
 
     private static final long serialVersionUID = 1L;
 

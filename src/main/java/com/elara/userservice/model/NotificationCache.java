@@ -19,6 +19,9 @@ import lombok.Setter;
 @AllArgsConstructor
 public class NotificationCache {
 
+    @Column(name = "token", unique = true)
+    private String token;//SHA 256 Hash of companyCode,userId,notificationType,otp
+
     @Column(name = "companyCode")
     private String companyCode;
 
@@ -30,9 +33,6 @@ public class NotificationCache {
 
     @Column(name = "otp")
     private String otp;
-
-    @Column(name = "token", unique = true)
-    private String token;//SHA 256 Hash of companyCode,userId,notificationType,otp
 
     @Column(name = "expiry")
     private Date expiry;

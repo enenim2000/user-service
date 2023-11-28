@@ -1,13 +1,13 @@
 package com.elara.userservice.dto.response;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.*;
 
 @Getter
 @Setter
+@Builder
 @ToString
+@NoArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class OtpVerifyResponse extends BaseResponse {
 

@@ -5,11 +5,11 @@ import lombok.*;
 
 @Getter
 @Setter
-@Builder
 @ToString
+@Builder
 @NoArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class OtpResendResponse extends BaseResponse {
+public class NotificationVerifyResponse extends BaseResponse {
 
 }
 

@@ -1,19 +1,8 @@
 package com.elara.userservice.controller;
 
 import com.elara.userservice.auth.Permission;
-import com.elara.userservice.dto.request.AccessTokenRequest;
-import com.elara.userservice.dto.request.NotificationRequest;
-import com.elara.userservice.dto.request.TokenVerifyRequest;
-import com.elara.userservice.dto.request.UserLoginRequest;
-import com.elara.userservice.dto.request.UserRegisterRequest;
-import com.elara.userservice.dto.response.AccessTokenResponse;
-import com.elara.userservice.dto.response.NotificationResponse;
-import com.elara.userservice.dto.response.OtpResendResponse;
-import com.elara.userservice.dto.response.OtpVerifyResponse;
-import com.elara.userservice.dto.response.TokenVerifyResponse;
-import com.elara.userservice.dto.response.UserLoginResponse;
-import com.elara.userservice.dto.response.UserLogoutResponse;
-import com.elara.userservice.dto.response.UserRegisterResponse;
+import com.elara.userservice.dto.request.*;
+import com.elara.userservice.dto.response.*;
 import com.elara.userservice.service.AuthenticationService;
 import com.elara.userservice.service.NotificationService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -153,5 +142,19 @@ public class AuthenticationController {
     notificationService.sendNotification(dto);
     return ResponseEntity.ok(NotificationResponse.builder()
         .build());
+  }
+
+  @Operation(summary = "Verify OTP")
+  @ApiResponses(value = {
+          @ApiResponse(responseCode = "200", description = "Verify OTP",
+                  content = {@Content(mediaType = "application/json",
+                          schema = @Schema(implementation = NotificationVerifyResponse.class))})})
+  @PostMapping("/notification/otp/verify")
+  public ResponseEntity<NotificationVerifyResponse> verifyOtpNotification(@Valid @RequestBody NotificationVerifyRequest dto) {
+    OtpVerifyResponse otpVerifyResponse = authenticationService.verifyOtp(dto.getOtp(), dto.getNotificationType());
+    NotificationVerifyResponse response = new NotificationVerifyResponse();
+    response.setResponseCode(otpVerifyResponse.getResponseCode());
+    response.setResponseMessage(otpVerifyResponse.getResponseMessage());
+    return ResponseEntity.ok(response);
   }
 }

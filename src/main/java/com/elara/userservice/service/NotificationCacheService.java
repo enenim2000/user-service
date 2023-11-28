@@ -7,6 +7,7 @@ import com.elara.userservice.util.HashUtil;
 import java.util.Date;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 @Slf4j
@@ -27,7 +28,7 @@ public class NotificationCacheService {
 
   public void put(String companyCode, long userId, NotificationType notificationType, String otp) {
     Date now = new Date();
-    long MINUTES = 60 * 1000; // in milli-seconds.
+    long MINUTES = 60 * 1000;
     int expiry;
 
     if (NotificationType.TransactionVerify.name().equalsIgnoreCase(notificationType.name())) {
@@ -38,10 +39,16 @@ public class NotificationCacheService {
 
     Date newDate = new Date(now.getTime() + expiry * MINUTES);
 
-    NotificationCache notificationCache = NotificationCache.builder().build();
+    String token = HashUtil.getHash(companyCode + userId + notificationType.name() + otp);
+    NotificationCache notificationCache = cacheRepository.findByToken(token);
+
+    if (notificationCache == null) {
+      notificationCache = new NotificationCache();
+    }
+
     notificationCache.setNotificationType(notificationCache.getNotificationType());
     notificationCache.setOtp(otp);
-    notificationCache.setToken(HashUtil.getHash(companyCode + userId + notificationType.name() + otp));
+    notificationCache.setToken(token);
     notificationCache.setExpiry(newDate);
     notificationCache.setUserId(userId);
     notificationCache.setCompanyCode(companyCode);
@@ -59,5 +66,10 @@ public class NotificationCacheService {
       return false;
     }
     return new Date().before(cache.getExpiry());
+  }
+
+  @Async("taskExecutor")
+  public void deleteExpiredOtp() {
+    cacheRepository.deleteExpiredOtp(new Date());
   }
 }
