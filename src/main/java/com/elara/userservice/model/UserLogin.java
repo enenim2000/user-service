@@ -14,6 +14,16 @@ import java.util.Date;
 @AllArgsConstructor
 public class UserLogin {
 
+    private static final long serialVersionUID = 1L;
+
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id", nullable = false)
+    @Id
+    private Long id;
+
+    @Column(name = "companyCode")
+    private String companyCode;
+
     @Column(name = "userId")
     private long userId;
 
