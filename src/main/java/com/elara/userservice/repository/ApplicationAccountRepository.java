@@ -1,6 +1,6 @@
 package com.elara.userservice.repository;
 
-import com.elara.userservice.model.ApplicationAccount;
+import com.elara.userservice.domain.ApplicationAccount;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.stereotype.Repository;

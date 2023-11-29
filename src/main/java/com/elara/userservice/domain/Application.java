@@ -1,16 +1,17 @@
-package com.elara.userservice.model;
+package com.elara.userservice.domain;
 
-import java.util.Date;
 import lombok.Getter;
 import lombok.Setter;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
+import java.io.Serializable;
+import java.util.Date;
 
 @Table(name = "Application")
 @Entity
 @Getter
 @Setter
-public class Application {
+public class Application implements Serializable {
 
     private static final long serialVersionUID = 1L;
 

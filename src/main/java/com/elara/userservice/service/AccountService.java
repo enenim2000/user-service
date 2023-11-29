@@ -4,7 +4,7 @@ import com.elara.userservice.dto.request.ApplicationRequest;
 import com.elara.userservice.dto.response.ApplicationResponse;
 import com.elara.userservice.enums.EntityStatus;
 import com.elara.userservice.exception.AppException;
-import com.elara.userservice.model.Application;
+import com.elara.userservice.domain.Application;
 import com.elara.userservice.repository.ApplicationRepository;
 import com.elara.userservice.auth.RequestUtil;
 import java.util.Date;

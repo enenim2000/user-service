@@ -1,6 +1,6 @@
 package com.elara.userservice.repository;
 
-import com.elara.userservice.model.UserGroupPermission;
+import com.elara.userservice.domain.UserGroupPermission;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 

@@ -1,14 +1,18 @@
-package com.elara.userservice.model;
+package com.elara.userservice.domain;
 
-import lombok.Getter;
-import lombok.Setter;
-import javax.persistence.*;
+import lombok.*;
+
+import jakarta.persistence.*;
+import java.io.Serializable;
 
 @Table(name = "UserGroupPermission")
 @Entity
 @Getter
 @Setter
-public class UserGroupPermission {
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+public class UserGroupPermission implements Serializable {
 
     private static final long serialVersionUID = 1L;
 

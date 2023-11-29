@@ -1,7 +1,7 @@
 package com.elara.userservice.service;
 
 import com.elara.userservice.enums.NotificationType;
-import com.elara.userservice.model.NotificationCache;
+import com.elara.userservice.domain.NotificationCache;
 import com.elara.userservice.repository.NotificationCacheRepository;
 import com.elara.userservice.util.HashUtil;
 import java.util.Date;

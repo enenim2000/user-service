@@ -1,14 +1,10 @@
-package com.elara.userservice.model;
+package com.elara.userservice.domain;
 
+import jakarta.persistence.*;
+import lombok.*;
+
+import java.io.Serializable;
 import java.util.Date;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Table;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
 
 @Table(name = "NotificationCache")
 @Entity
@@ -17,7 +13,14 @@ import lombok.Setter;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class NotificationCache {
+public class NotificationCache implements Serializable {
+
+    private static final long serialVersionUID = 1L;
+
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id", nullable = false)
+    @Id
+    private Long id;
 
     @Column(name = "token", unique = true)
     private String token;//SHA 256 Hash of companyCode,userId,notificationType,otp

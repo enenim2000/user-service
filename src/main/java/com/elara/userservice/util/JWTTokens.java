@@ -1,10 +1,9 @@
 package com.elara.userservice.util;
 
-import com.elara.userservice.auth.AuthToken;
 import com.elara.userservice.auth.RequestUtil;
 import com.elara.userservice.enums.ResponseCode;
 import com.elara.userservice.exception.UnAuthorizedException;
-import com.elara.userservice.model.Company;
+import com.elara.userservice.domain.Company;
 import com.elara.userservice.service.MessageService;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;

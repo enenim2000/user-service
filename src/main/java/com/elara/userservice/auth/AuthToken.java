@@ -10,6 +10,8 @@ public class AuthToken {
 
   private String companyName;
 
+  private String uuid;
+
   private String email;
 
   private String phone;

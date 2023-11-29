@@ -1,6 +1,6 @@
 package com.elara.userservice.service;
 
-import com.elara.userservice.model.UserGroup;
+import com.elara.userservice.domain.UserGroup;
 import com.elara.userservice.repository.UserGroupRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;

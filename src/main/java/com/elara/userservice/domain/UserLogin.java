@@ -1,18 +1,21 @@
-package com.elara.userservice.model;
+package com.elara.userservice.domain;
 
-import lombok.*;
+import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
-import javax.persistence.*;
+import java.io.Serializable;
 import java.util.Date;
 
-@Table(name = "UserLogin")
 @Entity
-@Getter
-@Setter
+@Table(name = "UserLogin")
+@Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class UserLogin {
+public class UserLogin implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
@@ -23,6 +26,9 @@ public class UserLogin {
 
     @Column(name = "companyCode")
     private String companyCode;
+
+    @Column(name = "uuid", unique = true)
+    private String uuid;
 
     @Column(name = "userId")
     private long userId;

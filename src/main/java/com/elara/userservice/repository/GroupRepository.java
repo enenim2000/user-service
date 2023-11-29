@@ -1,10 +1,10 @@
 package com.elara.userservice.repository;
 
-import com.elara.userservice.model.Group;
+import com.elara.userservice.domain.AccountGroup;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 
-public interface GroupRepository extends JpaRepository<Group, Long>, JpaSpecificationExecutor<Group> {
+public interface GroupRepository extends JpaRepository<AccountGroup, Long>, JpaSpecificationExecutor<AccountGroup> {
 
-  Group findByGroupNameAndCompanyCode(String groupName, String companyCode);
+  AccountGroup findByNameAndCompany(String name, String company);
 }

@@ -3,7 +3,7 @@ package com.elara.userservice.auth;
 
 import javax.servlet.http.HttpServletRequest;
 
-import com.elara.userservice.model.User;
+import com.elara.userservice.domain.User;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;

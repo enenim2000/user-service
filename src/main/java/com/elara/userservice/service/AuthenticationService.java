@@ -10,7 +10,7 @@ import com.elara.userservice.enums.ResponseCode;
 import com.elara.userservice.enums.UserType;
 import com.elara.userservice.exception.AppException;
 import com.elara.userservice.exception.UnAuthorizedException;
-import com.elara.userservice.model.*;
+import com.elara.userservice.domain.*;
 import com.elara.userservice.repository.*;
 import com.elara.userservice.util.JWTTokens;
 import com.elara.userservice.util.PasswordEncoder;
@@ -23,6 +23,7 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.UUID;
 
 @Slf4j
 @Service
@@ -110,10 +111,11 @@ public class AuthenticationService {
             .createdAt(new Date())
             .userId(newEntry.getId())
             .companyCode(newEntry.getCompanyCode())
+            .uuid(UUID.randomUUID().toString())
             .build());
 
     String groupName = UserType.Customer.name();
-    Group group = groupRepository.findByGroupNameAndCompanyCode(groupName,
+    AccountGroup group = groupRepository.findByNameAndCompany(groupName,
         newEntry.getCompanyCode());
 
     if (group == null) {
@@ -183,6 +185,7 @@ public class AuthenticationService {
     authToken.setAccessToken(accessToken);
     authToken.setAudience(audience);
     authToken.setUsername(dto.getUsername());
+    authToken.setUuid(userLogin.getUuid());
     authToken.setRefreshToken(refreshToken);
     authToken.setExpires(jwtTokens.parseJWT(accessToken).getExpiration().toString());
 

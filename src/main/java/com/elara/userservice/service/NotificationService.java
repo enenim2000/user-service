@@ -2,8 +2,6 @@ package com.elara.userservice.service;
 
 import com.elara.userservice.auth.RequestUtil;
 import com.elara.userservice.dto.request.NotificationRequest;
-import com.elara.userservice.exception.AppException;
-import com.elara.userservice.model.Company;
 import com.elara.userservice.repository.CompanyRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Async;

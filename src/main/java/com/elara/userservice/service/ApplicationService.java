@@ -1,7 +1,7 @@
 package com.elara.userservice.service;
 
-import com.elara.userservice.model.Application;
-import com.elara.userservice.model.ApplicationPermission;
+import com.elara.userservice.domain.Application;
+import com.elara.userservice.domain.ApplicationPermission;
 import com.elara.userservice.repository.ApplicationPermissionRepository;
 import com.elara.userservice.repository.ApplicationRepository;
 import lombok.extern.slf4j.Slf4j;
