@@ -446,7 +446,7 @@ public class AuthenticationService {
   }
 
   public ResetPasswordResponse resetPassword(ResetPasswordRequest dto) {
-
+    return null;
   }
 
   public ResetPasswordInitiateResponse resetPasswordInitiate() {
@@ -483,5 +483,6 @@ public class AuthenticationService {
   }
 
   public ChangePasswordResponse changePassword(ChangePasswordRequest dto) {
+    return null;
   }
 }
