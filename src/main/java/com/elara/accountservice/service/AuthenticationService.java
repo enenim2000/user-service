@@ -17,6 +17,7 @@ import com.elara.accountservice.util.HashUtil;
 import com.elara.accountservice.util.JWTTokens;
 import com.elara.accountservice.util.PasswordEncoder;
 import io.jsonwebtoken.Claims;
+import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Value;
@@ -446,10 +447,29 @@ public class AuthenticationService {
   }
 
   public ResetPasswordResponse resetPassword(ResetPasswordRequest dto) {
-    return null;
+    UserLogin userLogin = userLoginRepository.findByUuid(RequestUtil.getAuthToken().getUuid());
+
+    boolean isValid = notificationCacheService.isValid(userLogin.getCompanyCode(), userLogin.getUserId(), NotificationType.ResetPasswordVerify, dto.getOtp());
+    if (!isValid) {
+      throw new AppException(messageService.getMessage("Otp.Verify.Fail"));
+    }
+
+    if (!dto.getNewPassword().equals(dto.getConfirmPassword())) {
+      throw new AppException(messageService.getMessage("ConfirmPassword.Mismatch"));
+    }
+
+    userLogin.setPassword(passwordEncoder.encode(dto.getNewPassword()));
+    userLoginRepository.save(userLogin);
+    return new ResetPasswordResponse();
   }
 
-  public ResetPasswordInitiateResponse resetPasswordInitiate() {
+  public ResetPasswordInitiateResponse resetPasswordInitiate(String username) {
+    User user = userRepository.findByEmailOrPhone(username);
+
+    if (user == null) {
+      throw new AppException(messageService.getMessage("User.Not.Found"));
+    }
+
     String otp = AppUtil.generateOtp();
 
     notificationService.sendNotification(NotificationRequest.builder()
@@ -457,9 +477,9 @@ public class AuthenticationService {
             .validationType(NotificationType.ResetPasswordVerify)
             .senderEmail(senderMail)
             .message(messageService.getMessage("message.email.reset-password"))
-            .companyCode(RequestUtil.getAuthToken().getCompanyCode())
+            .companyCode(user.getCompanyCode())
             .subject(messageService.getMessage("email.reset-password.subject"))
-            .recipientEmail(RequestUtil.getAuthToken().getEmail())
+            .recipientEmail(user.getEmail())
             .build(), otp);
 
     notificationService.sendNotification(NotificationRequest.builder()
@@ -467,9 +487,9 @@ public class AuthenticationService {
             .validationType(NotificationType.ResetPasswordVerify)
             .senderPhone(senderSms)
             .message(messageService.getMessage("message.phone.reset-password"))
-            .companyCode(RequestUtil.getAuthToken().getCompanyCode())
+            .companyCode(user.getCompanyCode())
             .subject(messageService.getMessage("phone.reset-password.subject"))
-            .recipientEmail(RequestUtil.getAuthToken().getPhone())
+            .recipientPhone(user.getPhone())
             .build(), otp);
 
     ResetPasswordInitiateResponse response = ResetPasswordInitiateResponse.builder()
@@ -483,6 +503,24 @@ public class AuthenticationService {
   }
 
   public ChangePasswordResponse changePassword(ChangePasswordRequest dto) {
-    return null;
+    String loginId = RequestUtil.getAuthToken().getUuid();
+    UserLogin userLogin = userLoginRepository.findByUuid(loginId);
+    if (userLogin == null) {
+      throw new AppException(messageService.getMessage("invalid.login"));
+    }
+
+    if (!passwordEncoder.matches(dto.getCurrentPassword(), userLogin.getPassword())) {
+      throw new AppException(messageService.getMessage("Password.Mismatch"));
+    }
+
+    if (!dto.getNewPassword().equals(dto.getConfirmPassword())) {
+      throw new AppException(messageService.getMessage("ConfirmPassword.Mismatch"));
+    }
+
+    userLogin.setPassword(passwordEncoder.encode(dto.getNewPassword()));
+
+    userLoginRepository.save(userLogin);
+
+    return new ChangePasswordResponse();
   }
 }

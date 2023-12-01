@@ -9,4 +9,6 @@ public interface CompanyRepository extends JpaRepository<Company, Long>, JpaSpec
   Company findByClientId(String clientId);
 
   Company findByCompanyCode(String companyCode);
+
+  Company findByCompanyName(String companyName);
 }

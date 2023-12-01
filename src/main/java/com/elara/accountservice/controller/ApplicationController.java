@@ -1,8 +1,10 @@
 package com.elara.accountservice.controller;
 
 import com.elara.accountservice.auth.Permission;
-import com.elara.accountservice.dto.request.ApplicationRequest;
-import com.elara.accountservice.dto.response.ApplicationResponse;
+import com.elara.accountservice.dto.request.CreateApplicationRequest;
+import com.elara.accountservice.dto.request.UpdateApplicationRequest;
+import com.elara.accountservice.dto.response.CreateApplicationResponse;
+import com.elara.accountservice.dto.response.UpdateApplicationResponse;
 import com.elara.accountservice.service.AccountService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -30,10 +32,21 @@ public class ApplicationController {
   @ApiResponses(value = {
       @ApiResponse(responseCode = "200", description = "Create New Application or Service",
           content = {@Content(mediaType = "application/json",
-              schema = @Schema(implementation = ApplicationResponse.class))})})
+              schema = @Schema(implementation = CreateApplicationResponse.class))})})
   @Permission("CREATE_APP")
   @PostMapping("/application/create")
-  public ResponseEntity<ApplicationResponse> createApplication(@Valid @RequestBody ApplicationRequest dto){
+  public ResponseEntity<CreateApplicationResponse> createApplication(@Valid @RequestBody CreateApplicationRequest dto){
     return ResponseEntity.ok(accountService.createApplication(dto));
+  }
+
+  @Operation(summary = "Update Application or Service")
+  @ApiResponses(value = {
+      @ApiResponse(responseCode = "200", description = "Update Application or Service",
+          content = {@Content(mediaType = "application/json",
+              schema = @Schema(implementation = UpdateApplicationResponse.class))})})
+  @Permission("UPDATE_APP")
+  @PostMapping("/application/update")
+  public ResponseEntity<UpdateApplicationResponse> updateApplication(@Valid @RequestBody UpdateApplicationRequest dto){
+    return ResponseEntity.ok(accountService.updateApplication(dto));
   }
 }

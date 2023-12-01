@@ -7,7 +7,7 @@ import lombok.ToString;
 @Getter
 @Setter
 @ToString
-public class CompanyRequest {
+public class CreateCompanyRequest {
 
     private String companyName;
 

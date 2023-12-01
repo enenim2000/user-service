@@ -10,10 +10,15 @@ import lombok.ToString;
 @Getter
 @Setter
 @ToString
+@AllArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class UserResponse extends BaseResponse {
+public class UpdateApplicationResponse extends BaseResponse {
 
     private Data data;
+
+    public UpdateApplicationResponse() {
+        super();
+    }
 
     @Getter
     @Setter
@@ -21,19 +26,13 @@ public class UserResponse extends BaseResponse {
     @NoArgsConstructor
     @AllArgsConstructor
     public static class Data {
-        private Long id;
+        private long id;
 
-        private String companyCode;
+        private String appName;
 
-        private String email;
+        private String appServer;
 
-        private String phone;
-
-        private String lang;
-
-        private boolean isEmailVerified;
-
-        private boolean isPhoneVerified;
+        private String appServerPort;
 
         private String status;
 

@@ -1,11 +1,15 @@
 package com.elara.accountservice.domain;
 
-import lombok.Getter;
-import lombok.Setter;
-
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 import java.io.Serializable;
 import java.util.Date;
+import lombok.Getter;
+import lombok.Setter;
 
 @Table(name = "Application")
 @Entity
@@ -20,7 +24,7 @@ public class Application implements Serializable {
     @Id
     private Long id;
 
-    @Column(name = "appName")
+    @Column(name = "appName", unique = true)
     private String appName;
 
     @Column(name = "appServer")

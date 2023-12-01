@@ -1,12 +1,17 @@
 package com.elara.accountservice.dto.response;
 
-import lombok.*;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.ToString;
 
 @Getter
 @Setter
 @ToString
 @Builder
-@AllArgsConstructor
 public class ResetPasswordResponse extends BaseResponse {
 
+  public ResetPasswordResponse() {
+    super();
+  }
 }

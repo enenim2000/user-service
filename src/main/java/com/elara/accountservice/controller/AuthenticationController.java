@@ -119,6 +119,7 @@ public class AuthenticationController {
           content = {@Content(mediaType = "application/json",
               schema = @Schema(implementation = OtpVerifyResponse.class))})})
   @GetMapping("/email/otp/resend")
+  @Permission("RESEND_EMAIL_OTP")
   public ResponseEntity<OtpResendResponse> resendEmailOtp() {
     return ResponseEntity.ok(authenticationService.resendEmailOtp());
   }
@@ -129,6 +130,7 @@ public class AuthenticationController {
           content = {@Content(mediaType = "application/json",
               schema = @Schema(implementation = OtpVerifyResponse.class))})})
   @GetMapping("/phone/otp/resend")
+  @Permission("RESEND_PHONE_OTP")
   public ResponseEntity<OtpResendResponse> resendPhoneOtp() {
     return ResponseEntity.ok(authenticationService.resendPhoneOtp());
   }
@@ -165,18 +167,20 @@ public class AuthenticationController {
                   content = {@Content(mediaType = "application/json",
                           schema = @Schema(implementation = ChangePasswordResponse.class))})})
   @PutMapping("/change-password")
+  @Permission("CHANGE_PASSWORD")
   public ResponseEntity<ChangePasswordResponse> changePassword(@Valid @RequestBody ChangePasswordRequest dto) {
     return ResponseEntity.ok(authenticationService.changePassword(dto));
   }
 
-  @Operation(summary = "Send Reset Password OTP")
+  @Operation(summary = "Initiate Reset Password")
   @ApiResponses(value = {
-          @ApiResponse(responseCode = "200", description = "Send Reset Password OTP",
+          @ApiResponse(responseCode = "200", description = "Initiate Reset Password",
                   content = {@Content(mediaType = "application/json",
                           schema = @Schema(implementation = ResetPasswordInitiateResponse.class))})})
-  @PutMapping("/reset-password/otp")
-  public ResponseEntity<ResetPasswordInitiateResponse> sendResetPasswordOtp() {
-    return ResponseEntity.ok(authenticationService.resetPasswordInitiate());
+  @PutMapping("/reset-password/{username}/initiate")
+  @Permission("RESET_PASSWORD_INITIATE")
+  public ResponseEntity<ResetPasswordInitiateResponse> initiateResetPassword(@PathVariable("username") String username) {
+    return ResponseEntity.ok(authenticationService.resetPasswordInitiate(username));
   }
 
   @Operation(summary = "Reset Password")
@@ -185,6 +189,7 @@ public class AuthenticationController {
                   content = {@Content(mediaType = "application/json",
                           schema = @Schema(implementation = ResetPasswordResponse.class))})})
   @PutMapping("/reset-password")
+  @Permission("RESET_PASSWORD")
   public ResponseEntity<ResetPasswordResponse> resetPassword(@Valid @RequestBody ResetPasswordRequest dto) {
     return ResponseEntity.ok(authenticationService.resetPassword(dto));
   }

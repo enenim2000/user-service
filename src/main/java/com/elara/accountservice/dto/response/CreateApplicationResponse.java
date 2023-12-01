@@ -1,17 +1,24 @@
 package com.elara.accountservice.dto.response;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
 
 @Getter
 @Setter
 @ToString
-@NoArgsConstructor
 @AllArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class CompanyResponse extends BaseResponse {
+public class CreateApplicationResponse extends BaseResponse {
 
     private Data data;
+
+    public CreateApplicationResponse() {
+        super();
+    }
 
     @Getter
     @Setter
@@ -19,17 +26,13 @@ public class CompanyResponse extends BaseResponse {
     @NoArgsConstructor
     @AllArgsConstructor
     public static class Data {
-        private Long id;
+        private long id;
 
-        private String companyName;
+        private String appName;
 
-        private String companyCode;
+        private String appServer;
 
-        private String companyAddress;
-
-        private String clientId;
-
-        private String clientSecret;
+        private String appServerPort;
 
         private String status;
 

@@ -1,6 +1,7 @@
 package com.elara.accountservice.domain;
 
 import jakarta.persistence.*;
+import java.util.Date;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -37,9 +38,15 @@ public class Company implements Serializable {
     @Column(name = "status", nullable = false)
     private String status;
 
-    @Column(name = "createdAt")
-    private String createdAt;
+    @Column(name = "createdAt", nullable = false)
+    private Date createdAt;
 
     @Column(name = "updatedAt")
-    private String updatedAt;
+    private Date updatedAt;
+
+    @Column(name = "createdBy")
+    private String createdBy;
+
+    @Column(name = "updatedBy")
+    private String updatedBy;
 }
