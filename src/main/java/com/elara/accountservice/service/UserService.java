@@ -55,6 +55,7 @@ public class UserService {
     User newEntry = modelMapper.map(dto, User.class);
     newEntry.setCreatedBy(RequestUtil.getAuthToken().getUsername());
     newEntry.setCreatedAt(new Date());
+    newEntry.setCompanyCode(company.getCompanyCode());
     newEntry.setStatus(EntityStatus.Enabled.name());
     newEntry = userRepository.save(newEntry);
     CreateUserResponse response = new CreateUserResponse();

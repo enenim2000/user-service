@@ -5,7 +5,7 @@ import com.elara.accountservice.dto.request.CreateApplicationRequest;
 import com.elara.accountservice.dto.request.UpdateApplicationRequest;
 import com.elara.accountservice.dto.response.CreateApplicationResponse;
 import com.elara.accountservice.dto.response.UpdateApplicationResponse;
-import com.elara.accountservice.service.AccountService;
+import com.elara.accountservice.service.ApplicationService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -22,10 +22,10 @@ import org.springframework.web.bind.annotation.RestController;
 @Tag(name = "Application Account Management", description = "Application Account Management")
 public class ApplicationController {
 
-  final AccountService accountService;
+  final ApplicationService applicationService;
 
-  public ApplicationController(AccountService accountService) {
-    this.accountService = accountService;
+  public ApplicationController(ApplicationService applicationService) {
+    this.applicationService = applicationService;
   }
 
   @Operation(summary = "Create New Application or Service")
@@ -36,7 +36,7 @@ public class ApplicationController {
   @Permission("CREATE_APP")
   @PostMapping("/application/create")
   public ResponseEntity<CreateApplicationResponse> createApplication(@Valid @RequestBody CreateApplicationRequest dto){
-    return ResponseEntity.ok(accountService.createApplication(dto));
+    return ResponseEntity.ok(applicationService.createApplication(dto));
   }
 
   @Operation(summary = "Update Application or Service")
@@ -47,6 +47,6 @@ public class ApplicationController {
   @Permission("UPDATE_APP")
   @PostMapping("/application/update")
   public ResponseEntity<UpdateApplicationResponse> updateApplication(@Valid @RequestBody UpdateApplicationRequest dto){
-    return ResponseEntity.ok(accountService.updateApplication(dto));
+    return ResponseEntity.ok(applicationService.updateApplication(dto));
   }
 }

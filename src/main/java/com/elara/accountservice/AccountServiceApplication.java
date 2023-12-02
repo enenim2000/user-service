@@ -1,5 +1,8 @@
 package com.elara.accountservice;
 
+import com.elara.accountservice.util.RSAUtil;
+import com.google.gson.Gson;
+import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
@@ -18,7 +21,7 @@ import org.springframework.stereotype.Component;
 @EnableDiscoveryClient
 @Component
 @SpringBootApplication
-public class AccountServiceApplication extends SpringBootServletInitializer {
+public class AccountServiceApplication extends SpringBootServletInitializer implements CommandLineRunner {
 
 	public static void main(String[] args) {
 		SpringApplication.run(AccountServiceApplication.class, args);
@@ -29,4 +32,8 @@ public class AccountServiceApplication extends SpringBootServletInitializer {
 		return application.sources(AccountServiceApplication.class);
 	}
 
+	@Override
+	public void run(String... args) throws Exception {
+		//System.out.println("Keys:::   " + new Gson().toJson(RSAUtil.generateKeyPair()));
+	}
 }

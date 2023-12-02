@@ -10,9 +10,13 @@ import com.elara.accountservice.enums.EntityStatus;
 import com.elara.accountservice.exception.AppException;
 import com.elara.accountservice.repository.CompanyRepository;
 import java.util.Date;
+import java.util.Map;
 import java.util.UUID;
+
+import com.elara.accountservice.util.RSAUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 @Slf4j
@@ -23,6 +27,9 @@ public class CompanyService {
 
     private final MessageService messageService;
     private final ModelMapper modelMapper;
+
+    @Value("${app.public-key}")
+    String publicKey;
 
     public CompanyService(CompanyRepository companyRepository,
         MessageService messageService, ModelMapper modelMapper) {
@@ -42,7 +49,9 @@ public class CompanyService {
         newEntry.setCreatedBy(RequestUtil.getAuthToken().getUsername());
         newEntry.setCreatedAt(new Date());
         newEntry.setStatus(EntityStatus.Enabled.name());
-
+        Map<String, String> keyPair = RSAUtil.generateKeyPair();
+        newEntry.setClientId(RSAUtil.encrypt(keyPair.get("public-key"), publicKey));
+        newEntry.setClientSecret(RSAUtil.encrypt(keyPair.get("private-key"), publicKey));
         newEntry = companyRepository.save(newEntry);
         CreateCompanyResponse response = new CreateCompanyResponse();
         response.setData(modelMapper.map(newEntry, CreateCompanyResponse.Data.class));

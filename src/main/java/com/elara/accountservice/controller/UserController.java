@@ -46,7 +46,7 @@ public class UserController {
               schema = @Schema(implementation = UpdateUserResponse.class))})})
   @Permission("UPDATE_USER")
   @PostMapping("/user/update")
-  public ResponseEntity<UpdateUserResponse> updateNewUser(@Valid @RequestBody UpdateUserRequest dto){
+  public ResponseEntity<UpdateUserResponse> updateUser(@Valid @RequestBody UpdateUserRequest dto){
     return ResponseEntity.ok(userService.updateUser(dto));
   }
 }

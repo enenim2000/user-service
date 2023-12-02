@@ -21,6 +21,9 @@ public class UserGroupPermission implements Serializable {
     @Id
     private Long id;
 
+    @Column(name = "companyCode", nullable = false)
+    private String companyCode;
+
     @Column(name = "groupId")
     private long groupId;
 

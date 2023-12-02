@@ -4,13 +4,14 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.io.Serializable;
+import java.util.Date;
 
-@Table(name = "AccountGroup")
+@Table(name = "Group")
 @Entity
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class AccountGroup implements Serializable {
+public class Group implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
@@ -19,11 +20,11 @@ public class AccountGroup implements Serializable {
     @Id
     private Long id;
 
-    @Column(name = "company")
-    private String company;
+    @Column(name = "companyCode")
+    private String companyCode;
 
-    @Column(name = "name")
-    private String name;
+    @Column(name = "groupName")
+    private String groupName;
 
     @Column(name = "description")
     private String description;
@@ -32,8 +33,14 @@ public class AccountGroup implements Serializable {
     private String status;
 
     @Column(name = "createdAt")
-    private String createdAt;
+    private Date createdAt;
 
     @Column(name = "updatedAt")
-    private String updatedAt;
+    private Date updatedAt;
+
+    @Column(name = "createdBy")
+    private String createdBy;
+
+    @Column(name = "updatedBy")
+    private String updatedBy;
 }

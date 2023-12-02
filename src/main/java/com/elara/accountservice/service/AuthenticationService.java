@@ -7,7 +7,7 @@ import com.elara.accountservice.dto.response.*;
 import com.elara.accountservice.enums.EntityStatus;
 import com.elara.accountservice.enums.NotificationType;
 import com.elara.accountservice.enums.ResponseCode;
-import com.elara.accountservice.enums.UserType;
+import com.elara.accountservice.enums.GroupType;
 import com.elara.accountservice.exception.AppException;
 import com.elara.accountservice.exception.UnAuthorizedException;
 import com.elara.accountservice.domain.*;
@@ -17,7 +17,6 @@ import com.elara.accountservice.util.HashUtil;
 import com.elara.accountservice.util.JWTTokens;
 import com.elara.accountservice.util.PasswordEncoder;
 import io.jsonwebtoken.Claims;
-import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Value;
@@ -104,7 +103,7 @@ public class AuthenticationService {
             .isEmailVerified(false)
             .isPhoneVerified(false)
             .status(EntityStatus.Enabled.name())
-            .createdBy(UserType.Customer.name())
+            .createdBy(GroupType.Customer.name())
             .createdAt(new Date())
             .build());
 
@@ -117,12 +116,12 @@ public class AuthenticationService {
             .uuid(UUID.randomUUID().toString())
             .build());
 
-    String groupName = UserType.Customer.name();
-    AccountGroup group = groupRepository.findByNameAndCompany(groupName,
+    String groupName = GroupType.Customer.name();
+    Group group = groupRepository.findByGroupNameAndCompanyCode(groupName,
         newEntry.getCompanyCode());
 
     if (group == null) {
-      throw new AppException(messageService.getMessage("Group.Not.Found").replace("{0}", groupName));
+      throw new AppException(messageService.getMessage("Group.NotFound").replace("{0}", groupName));
     }
 
     UserGroup userGroup =  new UserGroup();
@@ -450,6 +449,7 @@ public class AuthenticationService {
     UserLogin userLogin = userLoginRepository.findByUuid(RequestUtil.getAuthToken().getUuid());
 
     boolean isValid = notificationCacheService.isValid(userLogin.getCompanyCode(), userLogin.getUserId(), NotificationType.ResetPasswordVerify, dto.getOtp());
+
     if (!isValid) {
       throw new AppException(messageService.getMessage("Otp.Verify.Fail"));
     }
