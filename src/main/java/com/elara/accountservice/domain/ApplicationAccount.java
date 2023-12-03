@@ -1,15 +1,19 @@
 package com.elara.accountservice.domain;
 
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 import java.io.Serializable;
+import java.util.Date;
 
 @Table(name = "ApplicationAccount")
 @Entity
 @Getter
 @Setter
+@ToString
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class ApplicationAccount implements Serializable {
 
     private static final long serialVersionUID = 1L;
@@ -29,10 +33,10 @@ public class ApplicationAccount implements Serializable {
     private String permissionId;
 
     @Column(name = "createdAt")
-    private String createdAt;
+    private Date createdAt;
 
     @Column(name = "updatedAt")
-    private String updatedAt;
+    private Date updatedAt;
 
     @Column(name = "createdBy")
     private String createdBy;

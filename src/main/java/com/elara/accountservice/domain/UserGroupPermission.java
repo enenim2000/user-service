@@ -4,6 +4,7 @@ import lombok.*;
 
 import jakarta.persistence.*;
 import java.io.Serializable;
+import java.util.Date;
 
 @Table(name = "UserGroupPermission")
 @Entity
@@ -30,9 +31,18 @@ public class UserGroupPermission implements Serializable {
     @Column(name = " applicationPermissionId")
     private long applicationPermissionId;
 
+    @Column(name = "status", nullable = false)
+    private String status;
+
     @Column(name = "createdAt")
-    private String createdAt;
+    private Date createdAt;
 
     @Column(name = "updatedAt")
-    private String updatedAt;
+    private Date updatedAt;
+
+    @Column(name = "createdBy")
+    private String createdBy;
+
+    @Column(name = "updatedBy")
+    private String updatedBy;
 }

@@ -14,5 +14,7 @@ public interface UserLoginRepository extends JpaRepository<UserLogin, Long>, Jpa
 
   UserLogin findByUserIdAndAccessToken(long userId, String accessToken);
 
+  UserLogin findByCompanyCodeAndUserId(String companyCode, long userId);
+
   UserLogin findByUserIdAndRefreshToken(long userId, String refreshToken);
 }

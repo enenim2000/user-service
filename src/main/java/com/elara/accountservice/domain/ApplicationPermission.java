@@ -1,15 +1,19 @@
 package com.elara.accountservice.domain;
 
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 import java.io.Serializable;
+import java.util.Date;
 
 @Table(name = "ApplicationPermission")
 @Entity
 @Getter
 @Setter
+@ToString
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class ApplicationPermission implements Serializable {
 
     private static final long serialVersionUID = 1L;
@@ -22,14 +26,18 @@ public class ApplicationPermission implements Serializable {
     @Column(name = "applicationId")
     private long applicationId;
 
+    //Hash SHA 256 of appName,http method,uri e.g user-service,GET,/api/user/logout
     @Column(name = "permissionId", unique = true)
-    private String permissionId; //Hash SHA 256 of appName,http method,uri e.g user-service,GET,/api/user/logout
+    private String permissionId;
 
     @Column(name = "permission")
     private String permission; //The value of PreAuthorize CREATE_USER
 
     @Column(name = "description")
     private String description;
+
+    @Column(name = "httpMethod")
+    private String httpMethod;
 
     @Column(name = "uriPath")
     private String uriPath;
@@ -41,10 +49,10 @@ public class ApplicationPermission implements Serializable {
     private String status;
 
     @Column(name = "createdAt")
-    private String createdAt;
+    private Date createdAt;
 
     @Column(name = "updatedAt")
-    private String updatedAt;
+    private Date updatedAt;
 
     @Column(name = "createdBy")
     private String createdBy;

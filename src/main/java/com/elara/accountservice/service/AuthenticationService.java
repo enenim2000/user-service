@@ -331,6 +331,10 @@ public class AuthenticationService {
       throw new AppException(messageService.getMessage("App.Setup.NotFound"));
     }
 
+    if (EntityStatus.Disabled.name().equals(application.getStatus())) {
+      throw new AppException(messageService.getMessage("Application.Shutdown"));
+    }
+
     //Token forwarded by API Gateway or frontend client
     String userToken = request.getToken();
 
@@ -351,7 +355,6 @@ public class AuthenticationService {
     }
 
     User user = userRepository.findByCompanyCodeAndEmailOrPhone(companyCode, username);
-
     if (user == null) {
       throw new AppException(messageService.getMessage("User.Not.Found"));
     }
@@ -360,18 +363,32 @@ public class AuthenticationService {
       throw new UnAuthorizedException(ResponseCode.UN_AUTHORIZED.getValue(), messageService.getMessage("User.Account.Disabled"));
     }
 
+    UserLogin userLogin = userLoginRepository.findByCompanyCodeAndUserId(companyCode, user.getId());
+    if (userLogin == null) {
+      throw new AppException(messageService.getMessage("Company.NotFound"));
+    }
+
     if (isAuthenticated(userToken, user.getId())) {
       if (isAuthorized(endpoint, user.getId())) {
         response.setResponseCode(ResponseCode.SUCCESSFUL.getValue());
         response.setResponseMessage(messageService.getMessage("Auth.Successful"));
       } else {
         response.setResponseCode(ResponseCode.FORBIDDEN.getValue());
-        response.setResponseMessage(messageService.getMessage("Auth.UnAuthorized"));
+        response.setResponseMessage(messageService.getMessage("Auth.Forbidden"));
       }
     } else {
       response.setResponseCode(ResponseCode.UN_AUTHORIZED.getValue());
-      response.setResponseMessage(messageService.getMessage("Auth.Forbidden"));
+      response.setResponseMessage(messageService.getMessage("Auth.UnAuthorized"));
     }
+
+    response.setData(TokenVerifyResponse.Data.builder()
+                    .loginId(userLogin.getUuid())
+                    .companyCode(userLogin.getCompanyCode())
+                    .username(username)
+                    .email(user.getEmail())
+                    .phone(user.getPhone())
+                    .status(userLogin.getStatus())
+                    .build());
 
     return response;
   }
@@ -464,7 +481,7 @@ public class AuthenticationService {
   }
 
   public ResetPasswordInitiateResponse resetPasswordInitiate(String username) {
-    User user = userRepository.findByEmailOrPhone(username);
+    User user = userRepository.findByUsername(username);
 
     if (user == null) {
       throw new AppException(messageService.getMessage("User.Not.Found"));

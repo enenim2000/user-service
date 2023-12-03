@@ -6,7 +6,7 @@ import lombok.*;
 import java.io.Serializable;
 import java.util.Date;
 
-@Table(name = "Group")
+@Table(name = "GroupAccount")
 @Entity
 @Data
 @AllArgsConstructor

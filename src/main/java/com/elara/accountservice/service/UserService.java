@@ -42,12 +42,12 @@ public class UserService {
       throw new AppException(messageService.getMessage("Company.NotFound"));
     }
 
-    User existing = userRepository.findByEmailOrPhone(dto.getEmail());
+    User existing = userRepository.findByUsername(dto.getEmail());
     if (existing != null) {
       throw new AppException(messageService.getMessage("User.Exist"));
     }
 
-    existing = userRepository.findByEmailOrPhone(dto.getPhone());
+    existing = userRepository.findByUsername(dto.getPhone());
     if (existing != null) {
       throw new AppException(messageService.getMessage("User.Exist"));
     }
@@ -64,7 +64,7 @@ public class UserService {
   }
 
   public UpdateUserResponse updateUser(UpdateUserRequest dto) {
-    User existing = userRepository.findByEmailOrPhone(dto.getEmail());
+    User existing = userRepository.findByUsername(dto.getEmail());
     if (existing == null) {
       throw new AppException(messageService.getMessage("User.NotFound"));
     }

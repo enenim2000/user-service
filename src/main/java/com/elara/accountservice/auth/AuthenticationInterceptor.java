@@ -7,20 +7,18 @@ import com.elara.accountservice.exception.UnAuthorizedException;
 import com.elara.accountservice.service.AuthenticationService;
 import com.elara.accountservice.service.MessageService;
 import com.elara.accountservice.util.HashUtil;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.method.HandlerMethod;
-import org.springframework.web.servlet.HandlerInterceptor;
 import org.springframework.web.servlet.ModelAndView;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 
 @Slf4j
 @Component
-public class AuthenticationInterceptor implements HandlerInterceptor {
+public class AuthenticationInterceptor implements org.springframework.web.servlet.HandlerInterceptor {
 
     /**
      * Block and Unblock user or customer, update pin when clicked by admin reset to default 0000, delete pin
@@ -58,7 +56,8 @@ public class AuthenticationInterceptor implements HandlerInterceptor {
     @Autowired
     MessageService messageService;
 
-    public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
+    @Override
+    public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) {
         log.info("AuthenticationInterceptor::preHandle()");
 
         if (!(handler instanceof HandlerMethod handlerMethod)) {
@@ -93,10 +92,12 @@ public class AuthenticationInterceptor implements HandlerInterceptor {
         return true;
     }
 
+    @Override
     public void postHandle(HttpServletRequest request, HttpServletResponse response, Object handler, ModelAndView modelAndView) throws Exception {
         log.info("AuthenticationInterceptor::postHandle()");
     }
 
+    @Override
     public void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler, Exception ex) throws Exception {
         log.info("AuthenticationInterceptor::afterCompletion()");
     }

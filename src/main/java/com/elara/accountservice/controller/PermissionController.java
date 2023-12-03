@@ -4,7 +4,6 @@ import com.elara.accountservice.auth.Permission;
 import com.elara.accountservice.dto.request.*;
 import com.elara.accountservice.dto.response.*;
 import com.elara.accountservice.service.PermissionService;
-import com.elara.accountservice.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -55,8 +54,40 @@ public class PermissionController {
                   content = {@Content(mediaType = "application/json",
                           schema = @Schema(implementation = AssignUserGroupResponse.class))})})
   @Permission("ASSIGN_USER_GROUP")
-  @PostMapping("/group/create")
+  @PostMapping("/user/group/assign")
   public ResponseEntity<AssignUserGroupResponse> assignUserGroup(@Valid @RequestBody AssignUserGroupRequest dto){
     return ResponseEntity.ok(permissionService.assignGroupToUser(dto));
+  }
+
+  @Operation(summary = "Assign Permission(s) to User")
+  @ApiResponses(value = {
+          @ApiResponse(responseCode = "200", description = "Assign Permission(s) to User",
+                  content = {@Content(mediaType = "application/json",
+                          schema = @Schema(implementation = AssignUserPermissionResponse.class))})})
+  @Permission("ASSIGN_USER_PERMISSION")
+  @PostMapping("/user/permission/assign")
+  public ResponseEntity<AssignUserPermissionResponse> assignUserPermission(@Valid @RequestBody AssignUserPermissionRequest dto){
+    return ResponseEntity.ok(permissionService.assignPermissionToUser(dto));
+  }
+
+  @Operation(summary = "Assign Permission(s) to Group")
+  @ApiResponses(value = {
+          @ApiResponse(responseCode = "200", description = "Assign Permission(s) to Group",
+                  content = {@Content(mediaType = "application/json",
+                          schema = @Schema(implementation = AssignGroupPermissionResponse.class))})})
+  @Permission("ASSIGN_GROUP_PERMISSION")
+  @PostMapping("/group/permission/assign")
+  public ResponseEntity<AssignGroupPermissionResponse> assignGroupPermission(@Valid @RequestBody AssignGroupPermissionRequest dto){
+    return ResponseEntity.ok(permissionService.assignPermissionToGroup(dto));
+  }
+
+  @Operation(summary = "Sync Application Permission")
+  @ApiResponses(value = {
+          @ApiResponse(responseCode = "200", description = "Sync Application Permission",
+                  content = {@Content(mediaType = "application/json",
+                          schema = @Schema(implementation = SyncPermissionResponse.class))})})
+  @PostMapping("/permission/sync")
+  public ResponseEntity<SyncPermissionResponse> syncApplicationPermission(@Valid @RequestBody SyncPermissionRequest dto){
+    return ResponseEntity.ok(permissionService.syncApplicationPermission(dto));
   }
 }

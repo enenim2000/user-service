@@ -45,8 +45,8 @@ public class CompanyController {
           content = {@Content(mediaType = "application/json",
               schema = @Schema(implementation = UpdateCompanyResponse.class))})})
   @Permission("UPDATE_COMPANY")
-  @PostMapping("/company/create")
-  public ResponseEntity<UpdateCompanyResponse> updateNewCompany(@Valid @RequestBody UpdateCompanyRequest dto){
+  @PostMapping("/company/update")
+  public ResponseEntity<UpdateCompanyResponse> updateCompany(@Valid @RequestBody UpdateCompanyRequest dto){
     return ResponseEntity.ok(companyService.updateCompany(dto));
   }
 }
