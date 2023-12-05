@@ -1,15 +1,12 @@
 package com.elara.accountservice.domain;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
-import java.io.Serializable;
-import java.util.Date;
+import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+
+import java.io.Serial;
+import java.io.Serializable;
+import java.util.Date;
 
 @Table(name = "Application")
 @Entity
@@ -17,6 +14,7 @@ import lombok.Setter;
 @Setter
 public class Application implements Serializable {
 
+    @Serial
     private static final long serialVersionUID = 1L;
 
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -33,10 +31,10 @@ public class Application implements Serializable {
     @Column(name = "appServerPort")
     private String appServerPort;
 
-    @Column(name = "publicKey")
+    @Column(name = "publicKey", length = 1200)
     private String publicKey;
 
-    @Column(name = "privateKey")
+    @Column(name = "privateKey", length = 1200)
     private String privateKey;
 
     @Column(name = "createdAt", nullable = false)

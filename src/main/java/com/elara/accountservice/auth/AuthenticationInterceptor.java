@@ -1,9 +1,14 @@
 package com.elara.accountservice.auth;
 
+import com.elara.accountservice.domain.Company;
+import com.elara.accountservice.domain.User;
 import com.elara.accountservice.dto.request.TokenVerifyRequest;
 import com.elara.accountservice.dto.response.TokenVerifyResponse;
 import com.elara.accountservice.enums.ResponseCode;
+import com.elara.accountservice.exception.AppException;
 import com.elara.accountservice.exception.UnAuthorizedException;
+import com.elara.accountservice.repository.CompanyRepository;
+import com.elara.accountservice.repository.UserRepository;
 import com.elara.accountservice.service.AuthenticationService;
 import com.elara.accountservice.service.MessageService;
 import com.elara.accountservice.util.HashUtil;
@@ -14,11 +19,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.method.HandlerMethod;
+import org.springframework.web.servlet.HandlerInterceptor;
 import org.springframework.web.servlet.ModelAndView;
 
 @Slf4j
 @Component
-public class AuthenticationInterceptor implements org.springframework.web.servlet.HandlerInterceptor {
+public class AuthenticationInterceptor implements HandlerInterceptor {
 
     /**
      * Block and Unblock user or customer, update pin when clicked by admin reset to default 0000, delete pin
@@ -50,15 +56,37 @@ public class AuthenticationInterceptor implements org.springframework.web.servle
     @Value("${spring.application.name}")
     private String serviceName;
 
-    @Autowired
-    AuthenticationService authenticationService;
+    private final AuthenticationService authenticationService;
 
-    @Autowired
-    MessageService messageService;
+    CompanyRepository companyRepository;
 
-    @Override
+    private final UserRepository userRepository;
+
+    private final MessageService messageService;
+
+    public AuthenticationInterceptor(AuthenticationService authenticationService, UserRepository userRepository, MessageService messageService) {
+        this.authenticationService = authenticationService;
+        this.userRepository = userRepository;
+        this.messageService = messageService;
+    }
+
+    //@Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) {
         log.info("AuthenticationInterceptor::preHandle()");
+
+        System.out.println("message: " + messageService.getMessage("Company.NotFound"));
+        User user = userRepository.findById(1L).get();
+
+
+        String clientId = request.getHeader("client-id");
+        Company company = companyRepository.findByClientId(clientId);
+        if (company == null) {
+            throw new AppException(messageService.getMessage("Company.NotFound"));
+        }
+
+        RequestUtil.setAuthToken(new AuthToken());
+        RequestUtil.getAuthToken().setCompanyCode(company.getCompanyCode());
+        RequestUtil.getAuthToken().setCompanyName(company.getCompanyName());
 
         if (!(handler instanceof HandlerMethod handlerMethod)) {
             return true;
@@ -92,12 +120,12 @@ public class AuthenticationInterceptor implements org.springframework.web.servle
         return true;
     }
 
-    @Override
+    //@Override
     public void postHandle(HttpServletRequest request, HttpServletResponse response, Object handler, ModelAndView modelAndView) throws Exception {
         log.info("AuthenticationInterceptor::postHandle()");
     }
 
-    @Override
+    //@Override
     public void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler, Exception ex) throws Exception {
         log.info("AuthenticationInterceptor::afterCompletion()");
     }

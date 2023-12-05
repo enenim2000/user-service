@@ -21,10 +21,8 @@ import org.springframework.stereotype.Service;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.TypedQuery;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
+
+import java.util.*;
 
 @Slf4j
 @Service
@@ -96,9 +94,9 @@ public class ApplicationService {
     newEntry.setCreatedBy(RequestUtil.getAuthToken().getUsername());
     newEntry.setCreatedAt(new Date());
     newEntry.setStatus(EntityStatus.Enabled.name());
-    Map<String, String> keyPair = RSAUtil.generateKeyPair();
-    newEntry.setPublicKey(RSAUtil.encrypt(keyPair.get("public-key"), publicKey));
-    newEntry.setPrivateKey(RSAUtil.encrypt(keyPair.get("private-key"), publicKey));
+
+    newEntry.setPublicKey(RSAUtil.encrypt(UUID.randomUUID().toString(), publicKey));
+    newEntry.setPrivateKey(RSAUtil.encrypt(UUID.randomUUID().toString(), publicKey));
     newEntry = applicationRepository.save(newEntry);
 
     CreateApplicationResponse response = new CreateApplicationResponse();

@@ -96,10 +96,15 @@ public class AuthenticationService {
       throw new AppException(messageService.getMessage("User.Phone.Exist"));
     }
 
+    Company company = companyRepository.findByClientId(RequestUtil.getClientId());
+    if (company == null) {
+      throw new AppException(messageService.getMessage("Company.NotFound"));
+    }
+
     User newEntry = userRepository.save(User.builder()
             .email(dto.getEmail())
             .phone(dto.getPhone())
-            .companyCode(RequestUtil.getAuthToken().getCompanyCode())
+            .companyCode(company.getCompanyCode())
             .isEmailVerified(false)
             .isPhoneVerified(false)
             .status(EntityStatus.Enabled.name())
@@ -130,7 +135,7 @@ public class AuthenticationService {
     userGroupRepository.save(userGroup);
 
     //Send otp to verify email via Notification Service
-    NotificationRequest.builder()
+    notificationService.sendNotification(NotificationRequest.builder()
             .requiredValidation(true)
             .validationType(NotificationType.EmailVerify)
             .senderPhone(null)
@@ -139,7 +144,7 @@ public class AuthenticationService {
             .companyCode(newEntry.getCompanyCode())
             .subject(messageService.getMessage("email.verify.subject"))
             .recipientPhone(newEntry.getPhone())
-            .build();
+            .build(), AppUtil.generateOtp());
 
     //Send otp to verify phone via Notification Service
     notificationService.sendNotification(NotificationRequest.builder()
@@ -275,14 +280,15 @@ public class AuthenticationService {
 
   }
 
-  private boolean isAuthenticated(String token, long userId) {
+  private boolean isAuthenticated(String token, User user) {
+    Long userId  = user.getId();
     UserLogin userLogin = userLoginRepository.findByUserIdAndAccessToken(userId, token);
     if (userLogin == null) {
       throw new AppException(messageService.getMessage("Token.Not.Found"));
     }
 
     if (!token.equals(userLogin.getAccessToken())) {
-      log.info("Token not match for userId:{}", userId);
+      log.info("Token not match for userId:{}", user.getId());
       throw new UnAuthorizedException(messageService.getMessage("Token.Fraud"));
     }
 
@@ -294,10 +300,16 @@ public class AuthenticationService {
    * @param endpoint is a hash value of SHA 256 of appName,http method,uri e.g user-service,GET,/api/user/logout
    * @return true if the user has the permission to call the endpoint, otherwise return false
    */
-  public boolean isAuthorized(String endpoint, long userId) {
+  public boolean isAuthorized(String endpoint, User user) {
+    Long userId  = user.getId();
     ApplicationPermission resource = applicationService.getByPermissionId(endpoint);
 
     if (!resource.isSecured()) {
+      return true;
+    }
+
+    /* Super admin profile required for setup */
+    if (user.getEmail().equalsIgnoreCase("system@system.com")) {
       return true;
     }
 
@@ -368,8 +380,8 @@ public class AuthenticationService {
       throw new AppException(messageService.getMessage("Company.NotFound"));
     }
 
-    if (isAuthenticated(userToken, user.getId())) {
-      if (isAuthorized(endpoint, user.getId())) {
+    if (isAuthenticated(userToken, user)) {
+      if (isAuthorized(endpoint, user)) {
         response.setResponseCode(ResponseCode.SUCCESSFUL.getValue());
         response.setResponseMessage(messageService.getMessage("Auth.Successful"));
       } else {

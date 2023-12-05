@@ -49,9 +49,8 @@ public class CompanyService {
         newEntry.setCreatedBy(RequestUtil.getAuthToken().getUsername());
         newEntry.setCreatedAt(new Date());
         newEntry.setStatus(EntityStatus.Enabled.name());
-        Map<String, String> keyPair = RSAUtil.generateKeyPair();
-        newEntry.setClientId(RSAUtil.encrypt(keyPair.get("public-key"), publicKey));
-        newEntry.setClientSecret(RSAUtil.encrypt(keyPair.get("private-key"), publicKey));
+        newEntry.setClientId(RSAUtil.encrypt(UUID.randomUUID().toString(), publicKey));
+        newEntry.setClientSecret(RSAUtil.encrypt(UUID.randomUUID().toString(), publicKey));
         newEntry = companyRepository.save(newEntry);
         CreateCompanyResponse response = new CreateCompanyResponse();
         response.setData(modelMapper.map(newEntry, CreateCompanyResponse.Data.class));

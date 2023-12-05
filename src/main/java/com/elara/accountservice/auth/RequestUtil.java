@@ -3,6 +3,7 @@ package com.elara.accountservice.auth;
 
 import javax.servlet.http.HttpServletRequest;
 
+import com.elara.accountservice.domain.Company;
 import com.elara.accountservice.domain.User;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.context.request.RequestContextHolder;

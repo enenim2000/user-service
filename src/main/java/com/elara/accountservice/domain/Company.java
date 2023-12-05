@@ -1,11 +1,12 @@
 package com.elara.accountservice.domain;
 
 import jakarta.persistence.*;
-import java.util.Date;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.io.Serial;
 import java.io.Serializable;
+import java.util.Date;
 
 @Table(name = "Company")
 @Entity
@@ -13,6 +14,7 @@ import java.io.Serializable;
 @Setter
 public class Company implements Serializable {
 
+    @Serial
     private static final long serialVersionUID = 1L;
 
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -29,10 +31,10 @@ public class Company implements Serializable {
     @Column(name = "companyAddress")
     private String companyAddress;
 
-    @Column(name = "clientId", unique = true)
+    @Column(name = "clientId", length = 1200, unique = true)
     private String clientId;
 
-    @Column(name = "clientSecret")
+    @Column(name = "clientSecret", length = 1200)
     private String clientSecret;
 
     @Column(name = "status", nullable = false)
