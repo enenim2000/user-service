@@ -1,15 +1,14 @@
 package com.elara.accountservice.validator.impl;
 
-
 import com.elara.accountservice.exception.AppException;
 import com.elara.accountservice.service.MessageService;
 import com.elara.accountservice.validator.Decimal;
+import jakarta.validation.ConstraintValidator;
+import jakarta.validation.ConstraintValidatorContext;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import javax.validation.ConstraintValidator;
-import javax.validation.ConstraintValidatorContext;
 import java.math.BigDecimal;
 
 @Slf4j

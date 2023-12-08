@@ -3,11 +3,9 @@ package com.elara.accountservice.dto.request;
 import com.elara.accountservice.validator.Required;
 import com.elara.accountservice.validator.ValidEmail;
 import com.elara.accountservice.validator.ValidPassword;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.Data;
 
-@Getter
-@Setter
+@Data
 public class UserRegisterRequest {
 
     @Required(message = "password.required")

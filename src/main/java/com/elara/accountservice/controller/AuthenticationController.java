@@ -14,13 +14,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/oauth")
@@ -71,8 +65,8 @@ public class AuthenticationController {
           @ApiResponse(responseCode = "200", description = "Obtain New Token Using Refresh Token",
                   content = {@Content(mediaType = "application/json",
                           schema = @Schema(implementation = TokenVerifyResponse.class))})})
-  @GetMapping("/token/refresh")
-  public ResponseEntity<AccessTokenResponse> getAccessToken(AccessTokenRequest dto) {
+  @PostMapping("/token/refresh")
+  public ResponseEntity<AccessTokenResponse> getAccessToken(@RequestBody AccessTokenRequest dto) {
     return ResponseEntity.ok(authenticationService.getAccessTokenFromRefreshToken(dto));
   }
 
@@ -86,8 +80,8 @@ public class AuthenticationController {
           @ApiResponse(responseCode = "200", description = "Verify User Is Authorized",
                   content = {@Content(mediaType = "application/json",
                           schema = @Schema(implementation = TokenVerifyResponse.class))})})
-  @GetMapping("/token/verify")
-  public ResponseEntity<TokenVerifyResponse> verifyToken(TokenVerifyRequest request) {
+  @PostMapping("/token/verify")
+  public ResponseEntity<TokenVerifyResponse> verifyToken(@RequestBody TokenVerifyRequest request) {
     return ResponseEntity.ok(authenticationService.verifyToken(request));
   }
 

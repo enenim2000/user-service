@@ -3,12 +3,12 @@ package com.elara.accountservice.validator.impl;
 import com.elara.accountservice.exception.AppException;
 import com.elara.accountservice.service.MessageService;
 import com.elara.accountservice.validator.Required;
+import jakarta.validation.ConstraintValidator;
+import jakarta.validation.ConstraintValidatorContext;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import javax.validation.ConstraintValidator;
-import javax.validation.ConstraintValidatorContext;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 
@@ -28,6 +28,7 @@ public class RequiredValidator implements ConstraintValidator<Required, Object> 
 
     @Override
     public boolean isValid(Object value, ConstraintValidatorContext cvc) {
+
         String castValue = "";
         if (value instanceof String) {
             castValue = (String) value;

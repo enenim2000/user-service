@@ -1,22 +1,19 @@
 package com.elara.accountservice.auth;
 
 import com.elara.accountservice.domain.Company;
-import com.elara.accountservice.domain.User;
 import com.elara.accountservice.dto.request.TokenVerifyRequest;
 import com.elara.accountservice.dto.response.TokenVerifyResponse;
+import com.elara.accountservice.enums.EntityStatus;
 import com.elara.accountservice.enums.ResponseCode;
 import com.elara.accountservice.exception.AppException;
 import com.elara.accountservice.exception.UnAuthorizedException;
 import com.elara.accountservice.repository.CompanyRepository;
-import com.elara.accountservice.repository.UserRepository;
 import com.elara.accountservice.service.AuthenticationService;
 import com.elara.accountservice.service.MessageService;
 import com.elara.accountservice.util.HashUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.HandlerInterceptor;
@@ -47,41 +44,38 @@ public class AuthenticationInterceptor implements HandlerInterceptor {
      * Pick up loan and approval management system
      * Loan dashboard summary, no of approval volume approval amount,
      */
-    @Value("${oauth.server.url}")
-    private String authServerUrl;
 
-    @Value("${oauth.server.client-id}")
     private String authServerClientId;
 
-    @Value("${spring.application.name}")
     private String serviceName;
 
     private final AuthenticationService authenticationService;
 
-    CompanyRepository companyRepository;
-
-    private final UserRepository userRepository;
+    private final CompanyRepository companyRepository;
 
     private final MessageService messageService;
 
-    public AuthenticationInterceptor(AuthenticationService authenticationService, UserRepository userRepository, MessageService messageService) {
+    public AuthenticationInterceptor(AuthenticationService authenticationService, CompanyRepository companyRepository, MessageService messageService) {
         this.authenticationService = authenticationService;
-        this.userRepository = userRepository;
+        this.companyRepository = companyRepository;
         this.messageService = messageService;
     }
 
-    //@Override
+
+    @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) {
         log.info("AuthenticationInterceptor::preHandle()");
 
         System.out.println("message: " + messageService.getMessage("Company.NotFound"));
-        User user = userRepository.findById(1L).get();
-
 
         String clientId = request.getHeader("client-id");
         Company company = companyRepository.findByClientId(clientId);
         if (company == null) {
             throw new AppException(messageService.getMessage("Company.NotFound"));
+        }
+
+        if (!EntityStatus.Enabled.name().equals(company.getStatus())) {
+            throw new AppException(messageService.getMessage("Company.Account.Disabled"));
         }
 
         RequestUtil.setAuthToken(new AuthToken());
@@ -100,13 +94,17 @@ public class AuthenticationInterceptor implements HandlerInterceptor {
         //Authorization server will authenticate the token that it generated and return response back
         //Check if response is authenticated and has permission, allow to proceed
 
-        String token = request.getHeader("Authorization").replace("Bearer ", "");
+        String token = request.getHeader("Authorization");
+
+        if (token == null || token.trim().equalsIgnoreCase("")) {
+            throw new AppException(messageService.getMessage("Token.Required"));
+        }
+        token = token.replace("Bearer ", "");
         String httpMethod = request.getMethod();
         String pathUri = request.getRequestURI();
 
         //Hash SHA 256 of appName,http method,uri e.g user-service,GET,/api/user/logout
-        String permissionId = HashUtil.getHash(serviceName + httpMethod + pathUri);
-
+        String permissionId = HashUtil.getHash("user-service" + httpMethod + pathUri);
        TokenVerifyResponse result = authenticationService.verifyToken(TokenVerifyRequest.builder()
                        .token(token)
                        .serviceClientId(authServerClientId)
@@ -117,15 +115,22 @@ public class AuthenticationInterceptor implements HandlerInterceptor {
            throw new UnAuthorizedException(messageService.getMessage("Token.Invalid"));
        }
 
+       RequestUtil.getAuthToken().setUsername(result.getData().getUsername());
+       RequestUtil.getAuthToken().setUuid(result.getData().getLoginId());
+       RequestUtil.getAuthToken().setEmail(result.getData().getEmail());
+       RequestUtil.getAuthToken().setPhone(result.getData().getPhone());
+       RequestUtil.getAuthToken().setPhoneVerified(result.getData().isPhoneVerified());
+       RequestUtil.getAuthToken().setEmailVerified(result.getData().isEmailVerified());
+
         return true;
     }
 
-    //@Override
+    @Override
     public void postHandle(HttpServletRequest request, HttpServletResponse response, Object handler, ModelAndView modelAndView) throws Exception {
         log.info("AuthenticationInterceptor::postHandle()");
     }
 
-    //@Override
+    @Override
     public void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler, Exception ex) throws Exception {
         log.info("AuthenticationInterceptor::afterCompletion()");
     }
@@ -133,6 +138,14 @@ public class AuthenticationInterceptor implements HandlerInterceptor {
     private boolean isSecuredRoute(HandlerMethod handlerMethod) {
         return handlerMethod.getMethod().isAnnotationPresent(
             Permission.class);
+    }
+
+    public void setAuthServerClientId(String authServerClientId) {
+        this.authServerClientId = authServerClientId;
+    }
+
+    public void setServiceName(String serviceName) {
+        this.serviceName = serviceName;
     }
 
    /* private boolean isPermitted(String forwardedToken, String httpMethod, String pathUri) {

@@ -18,12 +18,8 @@ import org.springframework.util.StringUtils;
 @Service
 public class MailService {
 
-    private final JavaMailSender emailSender;
-
     @Autowired
-    public MailService(JavaMailSender emailSender) {
-        this.emailSender = emailSender;
-    }
+    JavaMailSender emailSender;
 
     public void sendNotification(NotificationRequest notification) {
         if (StringUtils.hasText(notification.getAttachment())) {

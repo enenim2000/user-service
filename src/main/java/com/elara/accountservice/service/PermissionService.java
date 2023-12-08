@@ -1,5 +1,6 @@
 package com.elara.accountservice.service;
 
+import com.elara.accountservice.auth.Permission;
 import com.elara.accountservice.auth.RequestUtil;
 import com.elara.accountservice.domain.*;
 import com.elara.accountservice.dto.request.*;
@@ -8,14 +9,19 @@ import com.elara.accountservice.enums.EntityStatus;
 import com.elara.accountservice.exception.AppException;
 import com.elara.accountservice.repository.*;
 import com.elara.accountservice.util.HashUtil;
+import io.swagger.v3.oas.annotations.Operation;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
+import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Isolation;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.method.HandlerMethod;
+import org.springframework.web.servlet.mvc.method.RequestMappingInfo;
+import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 @Slf4j
 @Service
@@ -142,8 +148,9 @@ public class PermissionService {
     return new AssignUserGroupResponse();
   }
 
+  @Transactional(isolation = Isolation.SERIALIZABLE)
   public AssignUserPermissionResponse assignPermissionToUser(AssignUserPermissionRequest dto) {
-    Company existing = companyRepository.findByCompanyName(dto.getCompanyCode());
+    Company existing = companyRepository.findByCompanyCode(dto.getCompanyCode());
     if (existing == null) {
       throw new AppException(messageService.getMessage("Company.NotFound"));
     }
@@ -224,8 +231,9 @@ public class PermissionService {
     return new SyncPermissionResponse();
   }
 
+  @Transactional(isolation = Isolation.SERIALIZABLE)
   public AssignGroupPermissionResponse assignPermissionToGroup(AssignGroupPermissionRequest dto) {
-    Company existing = companyRepository.findByCompanyName(dto.getCompanyCode());
+    Company existing = companyRepository.findByCompanyCode(dto.getCompanyCode());
     if (existing == null) {
       throw new AppException(messageService.getMessage("Company.NotFound"));
     }
@@ -266,5 +274,79 @@ public class PermissionService {
     userGroupPermissionRepository.deleteByCompanyCodeAndGroupIdAndApplicationPermissionIdIn(dto.getCompanyCode(), group.getId(), deletePermissionIds);
 
     return new AssignGroupPermissionResponse();
+  }
+
+  public CreatePermissionResponse createApplicationPermission(CreatePermissionRequest dto) {
+
+    Application application = applicationRepository.findByAppName(dto.getAppName());
+    if (application == null) {
+      throw new AppException(messageService.getMessage("App.NotFound"));
+    }
+
+    for (CreatePermissionRequest.Data permission : dto.getPermissions()) {
+      String permissionId = HashUtil.getHash(application.getAppName() + permission.getHttpMethod() + permission.getUriPath());
+      ApplicationPermission applicationPermission = applicationPermissionRepository.findByPermissionId(permissionId);
+      if (applicationPermission == null) {
+        applicationPermission = new ApplicationPermission();
+        applicationPermission.setApplicationId(application.getId());
+        applicationPermission.setPermissionId(permissionId);
+        applicationPermission.setCreatedBy(RequestUtil.getAuthToken().getUsername());
+        applicationPermission.setPermission(permission.getPermission());
+        applicationPermission.setSecured(true);
+        applicationPermission.setCreatedAt(new Date());
+        applicationPermission.setStatus(EntityStatus.Enabled.name());
+        applicationPermission.setDescription(permission.getDescription());
+        applicationPermission.setHttpMethod(permission.getHttpMethod());
+        applicationPermission.setUriPath(permission.getUriPath());
+        applicationPermissionRepository.save(applicationPermission);
+      }
+    }
+
+    return new CreatePermissionResponse();
+  }
+
+  public SyncPermissionRequest generatePermissionRequest(RequestMappingHandlerMapping requestMappingHandlerMapping) {
+    Map<RequestMappingInfo, HandlerMethod> endpoints = requestMappingHandlerMapping.getHandlerMethods();
+    Iterator<Map.Entry<RequestMappingInfo, HandlerMethod>> it = endpoints.entrySet().iterator();
+    HandlerMethod handlerMethod;
+    RequestMappingInfo requestInfo;
+    String permission;
+    SyncPermissionRequest syncPermissionRequest = new SyncPermissionRequest();
+    syncPermissionRequest.setAppName("user-service");
+    syncPermissionRequest.setPermissions(new ArrayList<>());
+
+    while (it.hasNext()) {
+      Map.Entry<RequestMappingInfo, HandlerMethod> pair = it.next();
+      handlerMethod = pair.getValue();
+      requestInfo = pair.getKey();
+      if(handlerMethod.hasMethodAnnotation(Permission.class)){
+        permission = handlerMethod.getMethod().getDeclaredAnnotation(Permission.class).value();
+        Optional<String> pathUri = requestInfo.getDirectPaths().stream().findFirst();
+
+        String method = HttpMethod.POST.name();
+        if (handlerMethod.getMethod().isAnnotationPresent(GetMapping.class)) {
+          method = HttpMethod.GET.name();
+        } else if (handlerMethod.getMethod().isAnnotationPresent(PutMapping.class)) {
+          method = HttpMethod.PUT.name();
+        } else if (handlerMethod.getMethod().isAnnotationPresent(PatchMapping.class)) {
+          method = HttpMethod.PATCH.name();
+        } else if (handlerMethod.getMethod().isAnnotationPresent(DeleteMapping.class)) {
+          method = HttpMethod.DELETE.name();
+        }
+
+        if (pathUri.isPresent()) {
+          syncPermissionRequest.getPermissions().add(
+                          SyncPermissionRequest.Data.builder()
+                                  .permission(permission)
+                                  .description(handlerMethod.getMethod().getDeclaredAnnotation(Operation.class).summary())
+                                  .httpMethod(method)
+                                  .isSecured(true)
+                                  .uriPath(pathUri.get())
+                                  .build());
+        }
+      }
+    }
+
+    return syncPermissionRequest;
   }
 }

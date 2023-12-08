@@ -51,6 +51,9 @@ public class JWTTokens {
 
         HashMap<String, String> claims = new HashMap<>();
         claims.put("ip", RequestUtil.getClientIp());
+        claims.put("subject", username);
+        claims.put("issuer", company.getCompanyCode());
+        claims.put("issuedAt", now.toString());
 
         //Let's set the JWT Claims
         JwtBuilder builder = Jwts.builder().setId(id)
@@ -76,10 +79,10 @@ public class JWTTokens {
         return createJWT(company, username, timeExpiry);
     }
 
-    public String generateRefreshToken(Company company) {
+    public String generateRefreshToken(Company company, String username) {
         //Refresh token expires in 24 hours after the access token expires
         int timeExpiry = Integer.parseInt(jwtDurationExpiry) * 24;
-        return createJWT(company, UUID.randomUUID().toString(), timeExpiry);
+        return createJWT(company, username, timeExpiry);
     }
 
     public Claims parseJWT(String jwtToken) {
@@ -90,6 +93,7 @@ public class JWTTokens {
             if (!claims.get("ip").equals(RequestUtil.getClientIp())) {
                 throw new UnAuthorizedException(messageService.getMessage("Token.Fraud"));
             }
+            return claims;
         } catch (SignatureException e) {
             log.error("Invalid JWT signature:", e);
         } catch (MalformedJwtException e) {
@@ -115,6 +119,7 @@ public class JWTTokens {
             if (!claims.get("ip").equals(RequestUtil.getClientIp())) {
                 throw new UnAuthorizedException(messageService.getMessage("Token.Fraud"));
             }
+            return claims;
         } catch (ExpiredJwtException e) {
             log.info("Refresh token expired: {}", e.getMessage());
             throw new UnAuthorizedException(ResponseCode.REFRESH_TOKEN_EXPIRED.getValue(), messageService.getMessage("Refresh.Token.Expired"));

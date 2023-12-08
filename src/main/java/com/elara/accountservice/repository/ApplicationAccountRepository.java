@@ -20,6 +20,6 @@ public interface ApplicationAccountRepository extends JpaRepository<ApplicationA
   ApplicationAccount findByCompanyCodeAndUserIdAndPermissionId(String companyCode, long userId, String permissionId);
 
   @Modifying
-  @Query("delete from ApplicationAccount ac where ac.companyCode = :companyCode  and ac.userId = :userId and ac.permissionId in :permissionIds")
+  @Query("delete from ApplicationAccount ac where ac.companyCode = :companyCode and ac.userId = :userId and ac.permissionId in :permissionIds")
   void deleteByCompanyCodeAndUserIdAndPermissionIdIn(@Param("companyCode") String companyCode, @Param("userId") Long userId, @Param("permissionIds") List<String> permissionIds);
 }

@@ -26,6 +26,16 @@ public class PermissionController {
     this.permissionService = permissionService;
   }
 
+  @Operation(summary = "Add Application Permission")
+  @ApiResponses(value = {
+          @ApiResponse(responseCode = "200", description = "Add Application Permission",
+                  content = {@Content(mediaType = "application/json",
+                          schema = @Schema(implementation = CreatePermissionResponse.class))})})
+  @PostMapping("/permission/add")
+  public ResponseEntity<CreatePermissionResponse> createApplicationPermission(@Valid @RequestBody CreatePermissionRequest dto){
+    return ResponseEntity.ok(permissionService.createApplicationPermission(dto));
+  }
+
   @Operation(summary = "Create Group")
   @ApiResponses(value = {
       @ApiResponse(responseCode = "200", description = "Create Group",

@@ -13,6 +13,9 @@ public interface UserRepository extends JpaRepository<User, Long>, JpaSpecificat
   @Query("select u from User u where u.companyCode = :companyCode and (u.email = :username or u.phone = :username)")
   User findByCompanyCodeAndEmailOrPhone(@Param("companyCode") String companyCode, @Param("username") String username);
 
+  @Query("select u from User u where u.companyCode = :companyCode and (u.email = :email or u.phone = :phone)")
+  User findByCompanyCodeAndEmailOrPhone(@Param("companyCode") String companyCode, @Param("email") String email, @Param("phone") String phone);
+
   User findByEmail(String email);
 
   User findByPhone(String phone);

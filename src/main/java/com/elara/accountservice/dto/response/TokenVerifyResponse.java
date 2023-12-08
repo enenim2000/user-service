@@ -2,6 +2,7 @@ package com.elara.accountservice.dto.response;
 
 import com.elara.accountservice.auth.AuthToken;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import jakarta.persistence.Column;
 import lombok.*;
 
 @Getter
@@ -30,6 +31,8 @@ public class TokenVerifyResponse extends BaseResponse {
         private String phone;
         private String email;
         private String status;
+        private boolean isEmailVerified;
+        private boolean isPhoneVerified;
     }
 }
 

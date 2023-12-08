@@ -31,10 +31,10 @@ public class Company implements Serializable {
     @Column(name = "companyAddress")
     private String companyAddress;
 
-    @Column(name = "clientId", length = 1200, unique = true)
+    @Column(name = "clientId", length = 4000, unique = true)
     private String clientId;
 
-    @Column(name = "clientSecret", length = 1200)
+    @Column(name = "clientSecret", length = 4000)
     private String clientSecret;
 
     @Column(name = "status", nullable = false)

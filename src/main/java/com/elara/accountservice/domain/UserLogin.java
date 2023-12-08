@@ -33,7 +33,7 @@ public class UserLogin implements Serializable {
     @Column(name = "userId")
     private long userId;
 
-    @Column(name = "password")
+    @Column(name = "password", length = 3000)
     private String password;
 
     @Column(name = "status", nullable = false)
@@ -45,10 +45,10 @@ public class UserLogin implements Serializable {
     @Column(name = "updatedAt")
     private String updatedAt;
 
-    @Column(name = "accessToken")
+    @Column(name = "accessToken", length = 4000, unique = true)
     private String accessToken;
 
-    @Column(name = "refreshToken")
+    @Column(name = "refreshToken", length = 4000, unique = true)
     private String refreshToken;
 
 }

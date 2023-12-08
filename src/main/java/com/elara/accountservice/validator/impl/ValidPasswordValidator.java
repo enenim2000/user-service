@@ -11,8 +11,8 @@ import org.passay.dictionary.sort.ArraysSort;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import javax.validation.ConstraintValidator;
-import javax.validation.ConstraintValidatorContext;
+import jakarta.validation.ConstraintValidator;
+import jakarta.validation.ConstraintValidatorContext;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.Arrays;

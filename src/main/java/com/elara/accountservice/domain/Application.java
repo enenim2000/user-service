@@ -31,10 +31,10 @@ public class Application implements Serializable {
     @Column(name = "appServerPort")
     private String appServerPort;
 
-    @Column(name = "publicKey", length = 1200)
+    @Column(name = "publicKey", length = 4000, unique = true)
     private String publicKey;
 
-    @Column(name = "privateKey", length = 1200)
+    @Column(name = "privateKey", length = 4000)
     private String privateKey;
 
     @Column(name = "createdAt", nullable = false)

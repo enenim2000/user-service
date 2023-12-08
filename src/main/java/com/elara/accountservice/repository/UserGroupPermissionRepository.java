@@ -18,6 +18,6 @@ public interface UserGroupPermissionRepository extends JpaRepository<UserGroupPe
   UserGroupPermission findByCompanyCodeAndGroupIdAndApplicationPermissionId(String companyCode, long groupId, Long applicationPermissionId);
 
   @Modifying
-  @Query("delete from UserGroupPermission ugp where ugp.companyCode = :companyCode  and ugp.groupId = :groupId and ugp.groupId in :permissionIds")
+  @Query("delete from UserGroupPermission ugp where ugp.companyCode = :companyCode and ugp.groupId = :groupId and ugp.applicationPermissionId in :permissionIds")
   void deleteByCompanyCodeAndGroupIdAndApplicationPermissionIdIn(@Param("companyCode") String companyCode, @Param("groupId") Long groupId,  @Param("permissionIds")List<Long> permissionIds);
 }

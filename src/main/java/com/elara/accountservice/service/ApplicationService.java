@@ -61,7 +61,7 @@ public class ApplicationService {
       List<Long> groupIds = userGroupService.groupIds(userId);
       String groupIdString = StringUtils.join(groupIds, ',');
       TypedQuery<Object[]> query = entityManager.createQuery(
-          "Select a.app_name from user_group_permission ugp inner join application_permission ap on ugp.application_permission_id = ap.id inner join application a on ap.application_id = a.id group by a.app_name where ugp.group_id in (" + groupIdString + ")", Object[].class);
+          "Select a.appName from UserGroupPermission ugp inner join ApplicationPermission ap on ugp.applicationPermissionId = ap.id inner join Application a on ap.applicationId = a.id where ugp.groupId in (" + groupIdString + ") group by a.appName", Object[].class);
       List<Object[]> results = query.getResultList();
       log.info("result.size(): {}", results.size());
       for (Object[] array : results) {

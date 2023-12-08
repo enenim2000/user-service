@@ -1,8 +1,9 @@
 package com.elara.accountservice.service;
 
 import com.elara.accountservice.auth.RequestUtil;
+import com.elara.accountservice.domain.User;
 import com.elara.accountservice.dto.request.NotificationRequest;
-import com.elara.accountservice.repository.CompanyRepository;
+import com.elara.accountservice.repository.UserRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
@@ -15,16 +16,16 @@ public class NotificationService {
   private final MailService mailService;
   private final SmsService smsService;
   private final NotificationCacheService cacheService;
-  private final CompanyRepository companyRepository;
+  private final UserRepository userRepository;
 
   public NotificationService(MailService mailService,
                              SmsService smsService,
                              NotificationCacheService cacheService,
-                             CompanyRepository companyRepository) {
+                             UserRepository userRepository) {
     this.mailService = mailService;
     this.smsService = smsService;
     this.cacheService = cacheService;
-    this.companyRepository = companyRepository;
+    this.userRepository = userRepository;
   }
 
   @Async("taskExecutor")
@@ -41,12 +42,13 @@ public class NotificationService {
 
   public void sendNotification(NotificationRequest dto, String otp) {
     if (dto != null) {
-      if (dto.isRequiredValidation()) {
+      User user = userRepository.findByCompanyCodeAndEmailOrPhone(dto.getCompanyCode(), dto.getRecipientEmail(), dto.getRecipientPhone());
+      if (dto.isRequiredValidation() && user != null) {
         dto.setMessage(dto.getMessage().replace("{0}", otp));
         if (StringUtils.hasText(dto.getHtml())) {
           dto.setHtml(dto.getHtml().replace("{0}", otp));
         }
-        cacheService.put(dto.getCompanyCode(), RequestUtil.getUser().getId(), dto.getValidationType(), otp);
+        cacheService.put(dto.getCompanyCode(), user.getId(), dto.getValidationType(), otp);
       }
 
       if (StringUtils.hasText(dto.getRecipientEmail())) {

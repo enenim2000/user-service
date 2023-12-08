@@ -16,16 +16,16 @@ import com.elara.accountservice.util.AppUtil;
 import com.elara.accountservice.util.HashUtil;
 import com.elara.accountservice.util.JWTTokens;
 import com.elara.accountservice.util.PasswordEncoder;
+import com.google.gson.Gson;
 import io.jsonwebtoken.Claims;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Isolation;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 @Slf4j
 @Service
@@ -85,6 +85,7 @@ public class AuthenticationService {
     this.notificationCacheService = notificationCacheService;
   }
 
+  @Transactional(isolation = Isolation.SERIALIZABLE)
   public UserRegisterResponse registerUser(UserRegisterRequest dto) {
     User existing  = userRepository.findByEmail(dto.getEmail());
     if (existing != null) {
@@ -107,6 +108,7 @@ public class AuthenticationService {
             .companyCode(company.getCompanyCode())
             .isEmailVerified(false)
             .isPhoneVerified(false)
+            .lang(Locale.getDefault().getLanguage())
             .status(EntityStatus.Enabled.name())
             .createdBy(GroupType.Customer.name())
             .createdAt(new Date())
@@ -132,18 +134,19 @@ public class AuthenticationService {
     UserGroup userGroup =  new UserGroup();
     userGroup.setUserId(newEntry.getId());
     userGroup.setGroupId(group.getId());
+    userGroup.setCompanyCode(company.getCompanyCode());
     userGroupRepository.save(userGroup);
 
     //Send otp to verify email via Notification Service
     notificationService.sendNotification(NotificationRequest.builder()
             .requiredValidation(true)
             .validationType(NotificationType.EmailVerify)
-            .senderPhone(null)
+            .recipientEmail(newEntry.getEmail())
             .senderEmail(senderMail)
             .message(messageService.getMessage("message.email.verify"))
             .companyCode(newEntry.getCompanyCode())
             .subject(messageService.getMessage("email.verify.subject"))
-            .recipientPhone(newEntry.getPhone())
+            .recipientPhone(null)
             .build(), AppUtil.generateOtp());
 
     //Send otp to verify phone via Notification Service
@@ -194,12 +197,15 @@ public class AuthenticationService {
 
     AuthToken authToken = modelMapper.map(user, AuthToken.class);
     String accessToken = jwtTokens.generateAccessToken(company, dto.getUsername());
-    String refreshToken = jwtTokens.generateRefreshToken(company);
+    String refreshToken = jwtTokens.generateRefreshToken(company, dto.getUsername());
     authToken.setAccessToken(accessToken);
     authToken.setAudience(audience);
+    authToken.setCompanyName(company.getCompanyName());
     authToken.setUsername(dto.getUsername());
     authToken.setUuid(userLogin.getUuid());
     authToken.setRefreshToken(refreshToken);
+    authToken.setEmailVerified(user.isEmailVerified());
+    authToken.setPhoneVerified(user.isPhoneVerified());
     authToken.setExpires(jwtTokens.parseJWT(accessToken).getExpiration().toString());
 
     userLogin.setAccessToken(accessToken);
@@ -238,20 +244,23 @@ public class AuthenticationService {
 
   public AccessTokenResponse getAccessTokenFromRefreshToken(AccessTokenRequest dto) {
     Claims claims = jwtTokens.parseRefreshJWT(dto.getRefreshToken());
-    String companyCode = claims.getIssuer();
+
+    log.info("Claims: {}", new Gson().toJson(claims));
+
+    String companyCode = (String) claims.get("issuer");
     Company company = companyRepository.findByCompanyCode(companyCode);
-    String username = claims.getSubject();
+    String username =  (String) claims.get("subject");
 
     User user = userRepository.findByCompanyCodeAndEmailOrPhone(company.getCompanyCode(), username);
     if (user == null) {
       log.info("User not found for company:{}, username:{}", company.getCompanyCode(), username);
-      throw new AppException(messageService.getMessage("Login.Failed"));
+      throw new AppException(messageService.getMessage("User.Not.Found"));
     }
 
     UserLogin userLogin = userLoginRepository.findByUserId(user.getId());
     if (userLogin == null) {
       log.info("UserLogin not found for userId:{}", user.getId());
-      throw new AppException(messageService.getMessage("Login.Failed"));
+      throw new AppException(messageService.getMessage("User.Not.Found"));
     }
 
     if (!dto.getRefreshToken().equals(userLogin.getRefreshToken())) {
@@ -263,11 +272,14 @@ public class AuthenticationService {
 
     AuthToken authToken = modelMapper.map(user, AuthToken.class);
     String accessToken = jwtTokens.generateAccessToken(company, username);
-    String refreshToken = jwtTokens.generateRefreshToken(company);
+    String refreshToken = jwtTokens.generateRefreshToken(company, username);
     authToken.setAccessToken(accessToken);
     authToken.setAudience(audience);
     authToken.setUsername(username);
     authToken.setRefreshToken(refreshToken);
+    authToken.setCompanyName(company.getCompanyName());
+    authToken.setUuid(userLogin.getUuid());
+    authToken.setLang(user.getLang());
     authToken.setExpires(jwtTokens.parseJWT(accessToken).getExpiration().toString());
 
     userLogin.setAccessToken(accessToken);
@@ -301,15 +313,19 @@ public class AuthenticationService {
    * @return true if the user has the permission to call the endpoint, otherwise return false
    */
   public boolean isAuthorized(String endpoint, User user) {
-    Long userId  = user.getId();
-    ApplicationPermission resource = applicationService.getByPermissionId(endpoint);
-
-    if (!resource.isSecured()) {
+    /* Super admin profile required for setup */
+    if (user.getEmail().equalsIgnoreCase("system@system.com")) {
       return true;
     }
 
-    /* Super admin profile required for setup */
-    if (user.getEmail().equalsIgnoreCase("system@system.com")) {
+    Long userId  = user.getId();
+    ApplicationPermission resource = applicationService.getByPermissionId(endpoint);
+
+    if (resource == null) {
+      throw new AppException(messageService.getMessage("App.Permission.NotFound"));
+    }
+
+    if (!resource.isSecured()) {
       return true;
     }
 
@@ -354,7 +370,7 @@ public class AuthenticationService {
     String endpoint = request.getPermissionId();
 
     Claims claims = jwtTokens.parseJWT(userToken);
-    String username = claims.getSubject();
+    String username = (String) claims.get("subject");
     String companyCode = claims.getIssuer();
 
     Company company = companyRepository.findByCompanyCode(companyCode);
@@ -474,6 +490,7 @@ public class AuthenticationService {
     return resp;
   }
 
+  @Transactional(isolation = Isolation.SERIALIZABLE)
   public ResetPasswordResponse resetPassword(ResetPasswordRequest dto) {
     UserLogin userLogin = userLoginRepository.findByUuid(RequestUtil.getAuthToken().getUuid());
 
@@ -531,6 +548,7 @@ public class AuthenticationService {
     return response;
   }
 
+  @Transactional(isolation = Isolation.SERIALIZABLE)
   public ChangePasswordResponse changePassword(ChangePasswordRequest dto) {
     String loginId = RequestUtil.getAuthToken().getUuid();
     UserLogin userLogin = userLoginRepository.findByUuid(loginId);
