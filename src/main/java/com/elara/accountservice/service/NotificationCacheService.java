@@ -46,7 +46,7 @@ public class NotificationCacheService {
       notificationCache = new NotificationCache();
     }
 
-    notificationCache.setNotificationType(notificationCache.getNotificationType());
+    notificationCache.setNotificationType(notificationType.name());
     notificationCache.setOtp(otp);
     notificationCache.setToken(token);
     notificationCache.setExpiry(newDate);

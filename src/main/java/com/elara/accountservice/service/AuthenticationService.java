@@ -319,6 +319,9 @@ public class AuthenticationService {
     }
 
     Long userId  = user.getId();
+
+    //Check for path variable as the permissionId hashed might fail
+
     ApplicationPermission resource = applicationService.getByPermissionId(endpoint);
 
     if (resource == null) {

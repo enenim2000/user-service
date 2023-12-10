@@ -1,6 +1,5 @@
 package com.elara.accountservice.service;
 
-import com.elara.accountservice.auth.RequestUtil;
 import com.elara.accountservice.domain.User;
 import com.elara.accountservice.dto.request.NotificationRequest;
 import com.elara.accountservice.repository.UserRepository;

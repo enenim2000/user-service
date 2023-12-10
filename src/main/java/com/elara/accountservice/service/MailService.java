@@ -35,7 +35,7 @@ public class MailService {
             message.setRecipients(MimeMessage.RecipientType.TO, notification.getRecipientEmail());
             message.setFrom(new InternetAddress(notification.getSenderEmail()));
             message.setSubject(notification.getSubject());
-            message.setContent(notification.getHtml(), "text/html; charset=utf-8");
+            message.setContent(notification.getHtml() != null ? notification.getHtml() : notification.getMessage(), "text/html; charset=utf-8");
             emailSender.send(message);
         } catch (MessagingException e) {
             log.error("error sending mail: ", e);

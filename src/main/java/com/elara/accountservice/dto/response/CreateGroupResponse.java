@@ -6,10 +6,15 @@ import lombok.*;
 @Getter
 @Setter
 @ToString
+@AllArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class CreateGroupResponse extends BaseResponse {
 
-    private Data data;
+    private CreateGroupResponse.Data data;
+
+    public CreateGroupResponse() {
+        super();
+    }
 
     @Getter
     @Setter
