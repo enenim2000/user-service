@@ -10,7 +10,7 @@ import lombok.*;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class CreateGroupResponse extends BaseResponse {
 
-    private CreateGroupResponse.Data data;
+    private Data data;
 
     public CreateGroupResponse() {
         super();

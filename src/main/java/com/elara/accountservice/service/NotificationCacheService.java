@@ -68,8 +68,16 @@ public class NotificationCacheService {
     return new Date().before(cache.getExpiry());
   }
 
-  @Async("taskExecutor")
   public void deleteExpiredOtp() {
-    cacheRepository.deleteExpiredOtp(new Date());
+    new Thread(() -> {
+      cacheRepository.deleteExpiredOtp(new Date());
+    }).start();
+  }
+
+  public void deleteUsedOtp(String companyCode, Long userId, NotificationType notificationType, String otp) {
+    new Thread( () -> {
+      String token = HashUtil.getHash(companyCode + userId + notificationType.name() + otp);
+      cacheRepository.deleteUsedOtp(token);
+    }).start();
   }
 }

@@ -199,29 +199,26 @@ public class PermissionService {
       throw new AppException(messageService.getMessage("App.NotFound"));
     }
 
-    for (SyncPermissionRequest.Data permission : dto.getPermissions()) {
-
-      //Hash SHA 256 of appName,http method,uri e.g user-service,GET,/api/user/logout
-      String permissionConcat = dto.getAppName().toLowerCase() + permission.getHttpMethod().toUpperCase() + permission.getUriPath().toLowerCase();
-      String permissionId = HashUtil.getHash(permissionConcat);
+    for (SyncPermissionRequest.Data data : dto.getPermissions()) {
+      String permissionId = HashUtil.getHash(dto.getAppName() + data.getPermission());
       ApplicationPermission applicationPermission = applicationPermissionRepository.findByPermissionId(permissionId);
       if (applicationPermission == null) {
         applicationPermissionRepository.save(ApplicationPermission.builder()
                         .applicationId(application.getId())
                         .permissionId(permissionId)
-                        .description(permission.getDescription())
-                        .isSecured(permission.isSecured())
-                        .httpMethod(permission.getHttpMethod())
-                        .permission(permission.getPermission())
-                        .uriPath(permission.getUriPath())
+                        .description(data.getDescription())
+                        .isSecured(data.isSecured())
+                        .httpMethod(data.getHttpMethod())
+                        .permission(data.getPermission())
+                        .uriPath(data.getUriPath())
                         .status(EntityStatus.Enabled.name())
                         .createdAt(new Date())
                         .createdBy(dto.getAppName())
                         .build());
       } else {
-        applicationPermission.setPermission(permission.getPermission());
-        applicationPermission.setDescription(permission.getDescription());
-        applicationPermission.setSecured(permission.isSecured());
+        applicationPermission.setPermission(data.getPermission());
+        applicationPermission.setDescription(data.getDescription());
+        applicationPermission.setSecured(data.isSecured());
         applicationPermission.setUpdatedAt(new Date());
         applicationPermission.setUpdatedBy(dto.getAppName());
         applicationPermissionRepository.save(applicationPermission);
@@ -283,21 +280,21 @@ public class PermissionService {
       throw new AppException(messageService.getMessage("App.NotFound"));
     }
 
-    for (CreatePermissionRequest.Data permission : dto.getPermissions()) {
-      String permissionId = HashUtil.getHash(application.getAppName() + permission.getHttpMethod() + permission.getUriPath());
+    for (CreatePermissionRequest.Data data : dto.getPermissions()) {
+      String permissionId = HashUtil.getHash(application.getAppName() + data.getPermission());
       ApplicationPermission applicationPermission = applicationPermissionRepository.findByPermissionId(permissionId);
       if (applicationPermission == null) {
         applicationPermission = new ApplicationPermission();
         applicationPermission.setApplicationId(application.getId());
         applicationPermission.setPermissionId(permissionId);
         applicationPermission.setCreatedBy(RequestUtil.getAuthToken().getUsername());
-        applicationPermission.setPermission(permission.getPermission());
+        applicationPermission.setPermission(data.getPermission());
         applicationPermission.setSecured(true);
         applicationPermission.setCreatedAt(new Date());
         applicationPermission.setStatus(EntityStatus.Enabled.name());
-        applicationPermission.setDescription(permission.getDescription());
-        applicationPermission.setHttpMethod(permission.getHttpMethod());
-        applicationPermission.setUriPath(permission.getUriPath());
+        applicationPermission.setDescription(data.getDescription());
+        applicationPermission.setHttpMethod(data.getHttpMethod());
+        applicationPermission.setUriPath(data.getUriPath());
         applicationPermissionRepository.save(applicationPermission);
       }
     }
@@ -319,7 +316,7 @@ public class PermissionService {
       Map.Entry<RequestMappingInfo, HandlerMethod> pair = it.next();
       handlerMethod = pair.getValue();
       requestInfo = pair.getKey();
-      if(handlerMethod.hasMethodAnnotation(Permission.class)){
+      if(handlerMethod.hasMethodAnnotation(Permission.class)) {
         permission = handlerMethod.getMethod().getDeclaredAnnotation(Permission.class).value();
         Optional<String> pathUri = requestInfo.getDirectPaths().stream().findFirst();
 
@@ -334,16 +331,14 @@ public class PermissionService {
           method = HttpMethod.DELETE.name();
         }
 
-        if (pathUri.isPresent()) {
-          syncPermissionRequest.getPermissions().add(
-                          SyncPermissionRequest.Data.builder()
-                                  .permission(permission)
-                                  .description(handlerMethod.getMethod().getDeclaredAnnotation(Operation.class).summary())
-                                  .httpMethod(method)
-                                  .isSecured(true)
-                                  .uriPath(pathUri.get())
-                                  .build());
-        }
+        syncPermissionRequest.getPermissions().add(
+                SyncPermissionRequest.Data.builder()
+                        .permission(permission)
+                        .description(handlerMethod.getMethod().getDeclaredAnnotation(Operation.class).summary())
+                        .httpMethod(method)
+                        .isSecured(true)
+                        .uriPath(pathUri.orElse(""))
+                        .build());
       }
     }
 

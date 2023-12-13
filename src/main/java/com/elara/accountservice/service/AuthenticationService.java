@@ -321,7 +321,6 @@ public class AuthenticationService {
     Long userId  = user.getId();
 
     //Check for path variable as the permissionId hashed might fail
-
     ApplicationPermission resource = applicationService.getByPermissionId(endpoint);
 
     if (resource == null) {
@@ -362,8 +361,12 @@ public class AuthenticationService {
       throw new AppException(messageService.getMessage("App.Setup.NotFound"));
     }
 
-    if (EntityStatus.Disabled.name().equals(application.getStatus())) {
+    if (EntityStatus.Shutdown.name().equals(application.getStatus())) {
       throw new AppException(messageService.getMessage("Application.Shutdown"));
+    }
+
+    if (EntityStatus.Disabled.name().equals(application.getStatus())) {
+      throw new AppException(messageService.getMessage("Application.Disabled"));
     }
 
     //Token forwarded by API Gateway or frontend client
@@ -374,7 +377,7 @@ public class AuthenticationService {
 
     Claims claims = jwtTokens.parseJWT(userToken);
     String username = (String) claims.get("subject");
-    String companyCode = claims.getIssuer();
+    String companyCode = (String) claims.get("issuer");
 
     Company company = companyRepository.findByCompanyCode(companyCode);
     if (company == null) {
@@ -437,6 +440,19 @@ public class AuthenticationService {
     if (isValidOtp) {
       response.setResponseCode(ResponseCode.SUCCESSFUL.getValue());
       response.setResponseMessage(messageService.getMessage("Otp.Verify.Success"));
+
+      if (NotificationType.EmailVerify.equals(notificationType)) {
+        user.setEmailVerified(true);
+      }
+
+      if (NotificationType.PhoneVerify.equals(notificationType)) {
+        user.setPhoneVerified(true);
+      }
+
+      userRepository.save(user);
+
+      notificationCacheService.deleteUsedOtp(companyCode, user.getId(), notificationType, otp);
+
       return response;
     }
 
@@ -478,19 +494,11 @@ public class AuthenticationService {
   }
 
   public OtpVerifyResponse verifyEmailOtp(String otp) {
-    OtpVerifyResponse response = verifyOtp(otp, NotificationType.EmailVerify);
-    OtpVerifyResponse resp = new OtpVerifyResponse();
-    resp.setResponseCode(response.getResponseCode());
-    resp.setResponseMessage(response.getResponseMessage());
-    return resp;
+    return verifyOtp(otp, NotificationType.EmailVerify);
   }
 
   public OtpVerifyResponse verifyPhoneOtp(String otp) {
-    OtpVerifyResponse response = verifyOtp(otp, NotificationType.PhoneVerify);
-    OtpVerifyResponse resp = new OtpVerifyResponse();
-    resp.setResponseCode(response.getResponseCode());
-    resp.setResponseMessage(response.getResponseMessage());
-    return resp;
+    return verifyOtp(otp, NotificationType.PhoneVerify);
   }
 
   @Transactional(isolation = Isolation.SERIALIZABLE)

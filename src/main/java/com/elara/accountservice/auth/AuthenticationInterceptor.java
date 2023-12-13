@@ -100,11 +100,8 @@ public class AuthenticationInterceptor implements HandlerInterceptor {
             throw new AppException(messageService.getMessage("Token.Required"));
         }
         token = token.replace("Bearer ", "");
-        String httpMethod = request.getMethod();
-        String pathUri = request.getRequestURI();
 
-        //Hash SHA 256 of appName,http method,uri e.g user-service,GET,/api/user/logout
-        String permissionId = HashUtil.getHash("user-service" + httpMethod + pathUri);
+        String permissionId = HashUtil.getHash(serviceName + handlerMethod.getMethod().getDeclaredAnnotation(Permission.class).value());
        TokenVerifyResponse result = authenticationService.verifyToken(TokenVerifyRequest.builder()
                        .token(token)
                        .serviceClientId(authServerClientId)

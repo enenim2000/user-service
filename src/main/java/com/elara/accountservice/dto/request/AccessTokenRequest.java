@@ -1,6 +1,5 @@
 package com.elara.accountservice.dto.request;
 
-import com.elara.accountservice.dto.response.BaseResponse;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.*;
 
@@ -10,7 +9,7 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class AccessTokenRequest extends BaseResponse {
+public class AccessTokenRequest {
 
     private String refreshToken;
 }

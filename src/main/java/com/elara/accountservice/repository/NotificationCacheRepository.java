@@ -20,4 +20,8 @@ public interface NotificationCacheRepository extends JpaRepository<NotificationC
   @Modifying
   @Query("DELETE FROM NotificationCache n WHERE n.expiry <= :now")
   void deleteExpiredOtp(@Param("now") Date now);
+
+  @Modifying
+  @Query("DELETE FROM NotificationCache n WHERE n.token = :token")
+  void deleteUsedOtp(@Param("token") String token);
 }

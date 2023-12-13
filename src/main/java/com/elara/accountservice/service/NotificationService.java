@@ -4,7 +4,6 @@ import com.elara.accountservice.domain.User;
 import com.elara.accountservice.dto.request.NotificationRequest;
 import com.elara.accountservice.repository.UserRepository;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
@@ -27,16 +26,18 @@ public class NotificationService {
     this.userRepository = userRepository;
   }
 
-  @Async("taskExecutor")
   public void sendEmail(NotificationRequest dto) {
-    log.info("Sending... email to notification service");
-    mailService.sendNotification(dto);
+    new Thread(() -> {
+      log.info("Sending... email to notification service");
+      mailService.sendNotification(dto);
+    }).start();
   }
 
-  @Async("taskExecutor")
   public void sendSms(NotificationRequest dto) {
-    log.info("Sending... sms to notification service");
-    smsService.sendMessage(dto);
+    new Thread(() -> {
+      log.info("Sending... sms to notification service");
+      smsService.sendMessage(dto);
+    }).start();
   }
 
   public void sendNotification(NotificationRequest dto, String otp) {
