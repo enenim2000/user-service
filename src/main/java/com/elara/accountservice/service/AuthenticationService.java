@@ -309,7 +309,7 @@ public class AuthenticationService {
 
   /**
    *
-   * @param endpoint is a hash value of SHA 256 of appName,http method,uri e.g user-service,GET,/api/user/logout
+   * @param endpoint is a hash value of SHA 256 of appName,permission e.g user-service,VERIFY_EMAIL_OTP
    * @return true if the user has the permission to call the endpoint, otherwise return false
    */
   public boolean isAuthorized(String endpoint, User user) {
