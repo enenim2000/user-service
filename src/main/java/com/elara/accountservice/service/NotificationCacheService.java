@@ -1,14 +1,14 @@
 package com.elara.accountservice.service;
 
-import com.elara.accountservice.enums.NotificationType;
 import com.elara.accountservice.domain.NotificationCache;
+import com.elara.accountservice.enums.NotificationType;
 import com.elara.accountservice.repository.NotificationCacheRepository;
 import com.elara.accountservice.util.HashUtil;
-import java.util.Date;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+
+import java.util.Date;
 
 @Slf4j
 @Service
